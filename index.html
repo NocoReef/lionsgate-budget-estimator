@@ -229,21 +229,7 @@
       <div style="margin-top:12px;" class="sub">Per-Person Estimate: <strong class="money" id="ppOut">$0</strong></div>
     </div>
 
-    <div class="card">
-      <h2>Line-Item Breakdown</h2>
-      <table class="table" id="table">
-        <thead>
-          <tr>
-            <th>Category</th>
-            <th>Included</th>
-            <th>Model</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
     </div>
-  </div>
 
   <script>
     const VENUE_PRICES = {
@@ -985,24 +971,14 @@
       return { guests, subtotal, taxes, grand, pp, lines, taxBuckets };
     }
 
-    function renderTable(lines) {
-      const tbody = $('#table tbody');
-      tbody.innerHTML = '';
-      lines.forEach(({ it, included, amount }) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${it.Category}</td><td>${included ? 'Yes' : 'No'}</td><td>${(it.PricingModel || '').includes('per_guest') ? 'Per Guest' : 'Flat'}</td><td class="money">${asMoney(amount)}</td>`;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function update() {
+        function update() {
       const { guests, subtotal, taxes, grand, pp, lines } = compute();
       document.getElementById('guestsOut').textContent = guests;
       document.getElementById('subtotalOut').textContent = asMoney(subtotal);
       document.getElementById('extrasOut').textContent = asMoney(taxes);
       document.getElementById('grandOut').textContent = asMoney(grand);
       document.getElementById('ppOut').textContent = asMoney(pp.toFixed(2));
-      renderTable(lines);
+      
       updateValueLabels();
       updateDescriptions();
     }
