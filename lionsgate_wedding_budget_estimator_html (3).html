@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lionsgate Wedding Budget Estimator</title>
+  <style>
+    :root {
+      --bg:#f7f6f3;
+      --card:#ffffff;
+      --ink:#2b2b2b;
+      --muted:#7a7a7a;
+      --accent:#9cad9f;
+      --accent-2:#6f8577;
+      --warm:#d8c8a8;
+      --border:rgba(0,0,0,0.06);
+      --radius:16px;
+      --shadow:0 10px 30px rgba(0,0,0,0.055);
+    }
+
+    * { box-sizing:border-box; }
+
+    body {
+      margin:0;
+      padding:22px;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:"Helvetica Neue", Arial, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height:1.45;
+    }
+
+    header {
+      display:flex;
+      align-items:center;
+      gap:18px;
+      flex-wrap:wrap;
+      justify-content:flex-start;
+      margin:6px auto 22px;
+      max-width:1100px;
+    }
+
+    #logo { height:58px; object-fit:contain; }
+    .brand { text-align:left; }
+    .brand h1 {
+      margin:2px 0 0;
+      font-family:Georgia, "Times New Roman", serif;
+      font-size:1.75rem;
+      font-weight:500;
+      letter-spacing:.35px;
+      line-height:1.12;
+    }
+    .brand p { margin:4px 0 0; color:var(--muted); font-size:.88rem; letter-spacing:.15px; }
+    .container { max-width:1100px; margin:0 auto; }
+
+    .card {
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+      margin-bottom:16px;
+      border:1px solid var(--border);
+    }
+
+    .row { display:grid; grid-template-columns:1.2fr 1fr; gap:16px; align-items:start; }
+    .slider-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .totals { display:grid; gap:8px; grid-template-columns:repeat(3,1fr); }
+    .extras-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+
+    @media (max-width:900px) {
+      .row,
+      .slider-grid,
+      .totals,
+      .extras-grid { grid-template-columns:1fr; }
+    }
+
+    h2 {
+      margin:0 0 8px;
+      font-family:Georgia, "Times New Roman", serif;
+      font-size:1.28rem;
+      font-weight:500;
+      letter-spacing:.2px;
+      line-height:1.2;
+    }
+    .sub { color:var(--muted); font-size:.9rem; }
+    .flex { display:flex; gap:11px; align-items:center; flex-wrap:wrap; }
+    .money { font-variant-numeric:tabular-nums; font-weight:600; }
+
+    input[type="range"] { width:100%; accent-color:var(--accent-2); }
+    select {
+      padding:7px 10px;
+      border-radius:9px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--ink);
+      font-size:.92rem;
+    }
+
+    .toggle { display:inline-flex; align-items:center; gap:10px; user-select:none; }
+    .switch { position:relative; width:44px; height:24px; flex:0 0 44px; }
+    .switch input { opacity:0; width:0; height:0; }
+    .sliderSwitch { position:absolute; inset:0; cursor:pointer; background:#ccc; border-radius:24px; transition:.2s; }
+    .sliderSwitch:before {
+      position:absolute;
+      content:"";
+      height:18px;
+      width:18px;
+      left:3px;
+      bottom:3px;
+      background:white;
+      border-radius:50%;
+      transition:.2s;
+    }
+    .switch input:checked + .sliderSwitch { background:var(--accent); }
+    .switch input:checked + .sliderSwitch:before { transform:translateX(20px); }
+
+    .pill {
+      border:1px solid rgba(0,0,0,0.05);
+      border-radius:var(--radius);
+      padding:12px;
+      background:#f3f1ed;
+      min-width:0;
+    }
+
+    .descBox {
+      margin-top:8px;
+      display:flex;
+      align-items:flex-start;
+      padding:9px 11px;
+      border:1px solid var(--border);
+      border-left:3px solid var(--accent);
+      background:#faf9f7;
+      border-radius:12px;
+    }
+    .descText { line-height:1.4; color:var(--ink); }
+
+    .extra-item {
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:11px;
+      background:#fff;
+    }
+    .extra-item .head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .extra-item .name { font-weight:700; }
+    .extra-item .price { font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .extra-item .meta { margin-top:6px; color:var(--muted); font-size:.92rem; line-height:1.35; }
+    .extra-item .control { margin-top:10px; }
+
+    .table { width:100%; border-collapse:collapse; }
+    .table th,
+    .table td { padding:7px 9px; border-bottom:1px solid var(--border); text-align:right; font-size:.92rem; }
+    .table th:first-child,
+    .table td:first-child { text-align:left; }
+  </style>
+</head>
+<body>
+  <header>
+    <img id="logo" src="" alt="Lionsgate Logo" />
+    <div class="brand">
+      <h1>Lionsgate Wedding Budget Estimator</h1>
+      <p class="sub">Transparent, adjustable estimates using Lionsgate vendor ranges.</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card row">
+      <div>
+        <h2>Guest Count</h2>
+        <div class="sub">Drag the slider to set your expected guest count.</div>
+        <div class="flex" style="gap:16px;align-items:center;">
+          <input id="guests" type="range" min="20" max="350" step="5" value="100" />
+          <strong id="guestsOut">100</strong>
+        </div>
+        <div class="sub" style="margin-top:12px;">Taxes auto-applied below: <strong>Venue 1.935%</strong> • <strong>Vendors 9.205%</strong></div>
+      </div>
+      <div>
+        <h2>Venue Options</h2>
+        <div class="flex">
+          <label>Planning &amp; Coordination
+            <select id="planningPreset">
+              <option value="month">Month-of Planning ($2,500)</option>
+              <option value="partial">Partial Planning ($4,000)</option>
+              <option value="full">Full-Service Planning ($6,500)</option>
+            </select>
+          </label>
+        </div>
+        <div class="flex" style="margin-top:10px;">
+          <label>Day of Week
+            <select id="dayPreset">
+              <option value="saturday">Saturday</option>
+              <option value="friday">Friday</option>
+              <option value="sunday">Sunday</option>
+              <option value="weekday">Weekday (Mon–Thu)</option>
+            </select>
+          </label>
+          <label>Additional Hours
+            <select id="hoursPreset">
+              <option value="0">None</option>
+              <option value="1">1 hour (+$400)</option>
+              <option value="2">2 hours (+$800)</option>
+              <option value="3">3 hours (+$1,200)</option>
+              <option value="4">4 hours (+$1,600)</option>
+              <option value="all">All Day (+$2,500)</option>
+            </select>
+          </label>
+          <span class="sub" id="calendarBadge">Saturday</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="sliders" class="card"></div>
+
+    <div class="card">
+      <h2>Additional Add-ons</h2>
+      <div class="sub" style="margin-bottom:12px;">Toggle any add-ons on or off. Pricing updates automatically with guest count where applicable.</div>
+      <div id="extrasGroup" class="extras-grid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Totals</h2>
+      <div class="totals">
+        <div class="pill">
+          <div class="sub">Subtotal (before tax)</div>
+          <div class="money" id="subtotalOut">$0</div>
+        </div>
+        <div class="pill">
+          <div class="sub">Estimated Taxes (Venue 1.935% • Vendors 9.205%)</div>
+          <div class="money" id="extrasOut">$0</div>
+        </div>
+        <div class="pill">
+          <div class="sub"><strong>Grand Total</strong></div>
+          <div class="money" id="grandOut" style="font-size:1.25rem;font-weight:800;">$0</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;" class="sub">Per-Person Estimate: <strong class="money" id="ppOut">$0</strong></div>
+    </div>
+
+    <div class="card">
+      <h2>Line-Item Breakdown</h2>
+      <table class="table" id="table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Included</th>
+            <th>Model</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    window.LIONSGATE_LOGO_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...REPLACE_WITH_FULL_BASE64...";
+    const DEFAULT_LOGO_SVG = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="420" height="120" viewBox="0 0 420 120"><rect width="100%" height="100%" rx="12" ry="12" fill="white" stroke="#e5f5f4"/><text x="50%" y="54%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" fill="#2a8c88">LIONSGATE EVENT CENTER</text><text x="50%" y="78%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#6b7280">Logo placeholder</text></svg>')}`;
+
+    const VENUE_PRICES = {
+      gatehouse: { label: 'The Gatehouse', weekday: 6000, friday: 9000, saturday: 12000, sunday: 7000 },
+      dovehouse: { label: 'The Dove House', weekday: 5000, friday: 8000, saturday: 10000, sunday: 6000 }
+    };
+
+    const ADDL_HOURS = {
+      '0': { label: 'None', hours: 0, price: 0, displayHours: 0 },
+      '1': { label: '1 hour', hours: 1, price: 400, displayHours: 1 },
+      '2': { label: '2 hours', hours: 2, price: 800, displayHours: 2 },
+      '3': { label: '3 hours', hours: 3, price: 1200, displayHours: 3 },
+      '4': { label: '4 hours', hours: 4, price: 1600, displayHours: 4 },
+      'all': { label: 'All Day', hours: 'all', price: 2500, displayHours: 2 }
+    };
+
+    const PLANNING = {
+      month: { label: 'Month-of Planning', price: 2500, desc: 'Timeline & vendor coordination in the final month, rehearsal management, detailed day-of execution.' },
+      partial: { label: 'Partial Planning', price: 4000, desc: 'Month-of services + design guidance, budget tracking, curated vendor referrals, periodic check-ins.' },
+      full: { label: 'Full-Service Planning', price: 6500, desc: 'Concept to curtain call: vision, design boards, vendor sourcing & negotiations, RSVP tracking, production schedule, day-of team.' }
+    };
+
+    const GRAT_BASE = {
+      month: { planner: 350, setup: 0 },
+      partial: { planner: 500, setup: 50 },
+      full: { planner: 800, setup: 200 }
+    };
+
+    const CATERING_PROFILES = {
+      dropoff(hoursSel) {
+        const hrs = ADDL_HOURS[hoursSel] || ADDL_HOURS['0'];
+        const price = hoursSel === 'all' ? 20 : 14 + (typeof hrs.hours === 'number' ? hrs.hours : 0) * 3;
+        return [{ label: 'Drop-off/Self-catered service fee', price, desc: 'Drop-off, self-catered, or off-list catering requires Lionsgate staffing for service, cleanup, and serviceware. This fee does not include food.' }];
+      },
+      foodtruck() { return [
+        { label: 'Food Truck — Limited options', price: 40, desc: 'Food made fresh from the truck, limited options to guests.' },
+        { label: 'Food Truck — Unlimited options', price: 70, desc: 'Food made fresh from the truck, unlimited options to guests.' }
+      ]; },
+      buffet() { return [
+        { label: 'Buffet — Pasta style (low)', price: 55, desc: 'Pasta style buffet estimate. Includes 2 basic passed appetizers, pasta bar (2 types of pasta, 2 types of sauce, no meat), salad, full catering staff.' },
+        { label: 'Buffet — Standard (medium)', price: 70, desc: '2–3 passed appetizers, salad, dinner rolls, 2 entrees (chicken or beef), 2 sides, full catering staff.' },
+        { label: 'Buffet — Carving (high)', price: 92, desc: '3–5 passed appetizers, salad, dinner rolls, 2–3 entrees (one carving station), 2–3 sides, full catering staff.' }
+      ]; },
+      plated() { return [
+        { label: 'Plated — Standard', price: 95, desc: '2–3 passed appetizers, preset salad & dinner rolls, 2 entree selections (chicken or beef), 2 sides, full catering staff.' },
+        { label: 'Plated — Premium', price: 120, desc: '3–5 passed appetizers, preset salad & dinner rolls, 3 entree selections (chicken, beef or fish), 2–3 sides, full catering staff.' }
+      ]; },
+      familystyle() { return [
+        { label: 'Family Style — Standard', price: 90, desc: '2–3 passed appetizers, salad, bread, 2 entrees, 2 sides, full catering service.' },
+        { label: 'Family Style — Premium', price: 120, desc: '3–5 passed appetizers, salad, bread, 2 entrees, 3 sides, full catering service.' }
+      ]; },
+      stations() { return [
+        { label: 'Stations — Self-service', price: 90, desc: '2–3 passed appetizers, 3 varied stations (guest self service).' },
+        { label: 'Stations — Chef interactive', price: 130, desc: '3–5 passed appetizers, 3 chef interactive stations.' }
+      ]; }
+    };
+
+    const BAR_ORDER = ['none', 'beer_wine', 'basic_full', 'premium_full', 'premium_plus'];
+    const BAR_PROFILES = {
+      none: { label: 'None (soda guns)', price: 500, model: 'flat', desc: 'For use of soda guns. Requires a Beverage Server from Lionsgate.' },
+      beer_wine: { label: 'Beer & Wine', price: 29, model: 'per_guest', desc: '4 hours of open bar service. 4 selections of beer, 3 selections of wine, champagne toast.' },
+      basic_full: { label: 'Basic Full Bar', price: 30, model: 'per_guest', desc: '4 hours of open bar service. 4 selections of basic spirits, 4 selections of beer, 3 selections of wine, champagne toast.' },
+      premium_full: { label: 'Premium Full Bar', price: 33, model: 'per_guest', desc: '4 hours of open bar service. 6 selections of top-tier spirits, 4 selections of beer, 3 selections of wine, champagne toast.' },
+      premium_plus: { label: 'Premium Plus Full Bar', price: 36, model: 'per_guest', desc: '4 hours of open bar service. 8 selections of top-tier spirits, 4 selections of beer, 3 selections of wine, champagne toast.' }
+    };
+
+    const ENT_PROFILES = {
+      dj: [
+        { label: 'DJ — Low', price: 1700, desc: 'Professional DJ for ceremony & reception (5 hrs), basic sound & mics. Great for simple setups.' },
+        { label: 'DJ — Medium', price: 2200, desc: 'Professional DJ for ceremony & reception (6 hrs), additional sound upgrades.' },
+        { label: 'DJ — High', price: 2750, desc: 'Professional DJ for ceremony & reception (8 hrs), additional sound upgrades, dance lighting.' }
+      ],
+      band: [
+        { label: 'Band — Low', price: 5200, desc: '4 hours of live music. Moderate sized band.' },
+        { label: 'Band — High', price: 10000, desc: '10 piece live band for reception.' }
+      ]
+    };
+
+    const TIER_VENDORS = {
+      photo: { title: 'Photography', options: [
+        { label: 'Low', price: 2700, desc: '5 hours of coverage + online gallery.' },
+        { label: 'Mid', price: 4000, desc: '6 hours of coverage + online gallery.' },
+        { label: 'High', price: 8500, desc: '8 hour of coverage, engagement shoot + online gallery.' }
+      ]},
+      video: { title: 'Videography', options: [
+        { label: 'Low', price: 2500, desc: '4 hours of coverage + mini highlight film.' },
+        { label: 'Mid', price: 3500, desc: '6 hours of coverage + mini highlight film.' },
+        { label: 'High', price: 5000, desc: '8 hours of coverage, drone footage + highlight OR documentary film.' }
+      ]},
+      officiant: { title: 'Officiant', options: [
+        { label: 'Low', price: 450, desc: 'Basic ceremony, no customization.' },
+        { label: 'Mid', price: 650, desc: 'Custom ceremony.' },
+        { label: 'High', price: 750, desc: 'Custom ceremony + rehearsal attendance.' }
+      ]},
+      florals: { title: 'Florals', options: [
+        { label: 'Low', calc: g => 300, desc: 'Bridal bouquet + boutonniere.' },
+        { label: 'Low Mid', calc: g => 800, desc: 'Bridal bouquet, 5 bridesmaids bouquets, 6 boutonniere.' },
+        { label: 'Mid', calc: g => 800 + (100 * g / 8), desc: 'Bridal bouquet, 5 bridesmaids bouquets, 6 boutonnieres, basic floral centerpieces.' },
+        { label: 'High Mid', calc: g => 1500 + (120 * g / 8), desc: 'Bridal bouquet, 5 bridesmaids bouquets, 6 boutonnieres, ceremony florals, floral centerpieces.' },
+        { label: 'High', calc: g => 4600 + (150 * g / 8), desc: 'Bridal bouquet, 5 bridesmaids bouquets, 6 boutonnieres, ceremony florals, lush floral centerpieces, ceiling greenery.' }
+      ]},
+      hairmakeup: { title: 'Hair & Makeup', options: [
+        { label: 'Low', price: 800, desc: 'Bridal hair and makeup + trial.' },
+        { label: 'Mid', price: 1800, desc: 'Bridal hair and makeup, bridal trial, 4 bridesmaids hair and makeup.' },
+        { label: 'High', price: 3000, desc: 'Bridal hair and makeup, bridal trial, 8 bridesmaids/moms hair and makeup.' }
+      ]},
+      transportation: { title: 'Transportation', options: [
+        { label: 'Low', calc: g => 400, desc: 'Black SUV for couple getaway.' },
+        { label: 'Mid', calc: g => 650, desc: '1 hour lavish limo getaway for couple and your choice of squad.' },
+        { label: 'High', calc: g => g <= 65 ? 850 : g <= 100 ? 1700 : g <= 150 ? 2250 : g <= 200 ? 3400 : g <= 250 ? 4250 : 5500, desc: 'Shuttles for full guest count to and from hotel(s).' }
+      ]}
+    };
+
+    const ADDONS = {
+      coffeecart: { title: 'Coffee Cart', calc: g => 3000, desc: '1 hour of coffees for guests.' },
+      seafoodcart: { title: 'Seafood Cart', calc: g => 70 * g, desc: 'Seafood cart offering oysters and tartar for cocktail hour.' },
+      churrotruck: { title: 'Churro Truck', calc: g => g <= 50 ? 750 : 550 + g * 4, desc: 'Fresh churros for guests.' },
+      latenightsnack: { title: 'Late Night Snack', calc: g => 20 * g, desc: 'Great add on for extended events!' },
+      beverageburros: { title: 'Beverage Burros', calc: g => 2000, desc: 'Beer burros walking around for photos and beer service for 1 hour.' },
+      horsedrawncarriage: { title: 'Horse Drawn Carriage', calc: g => 1000, desc: 'Horse drawn carriage for 1 hour.' },
+      photobooth: { title: 'Photobooth', calc: g => 1000, desc: '3-4 hours of photo fun with backdrop and props.' },
+      audioguestbook: { title: 'Audio Guestbook', calc: g => 150, desc: 'Vintage phone for guests to leave a personal message.' },
+      karaoke: { title: 'Karaoke', calc: g => 1000, desc: 'Added on with DJ for a fun late night sing session.' },
+      marketlights: { title: 'Market lights', calc: g => 1000, desc: 'Market lights strung in the Gatehouse ceiling.' },
+      draping: { title: 'Draping', calc: g => 1000, desc: 'White or black draping hung in the Gatehouse ceiling.' },
+      marketlightsdraping: { title: 'Market lights & Draping', calc: g => 1800, desc: 'White or black draping with market lights hung in the Gatehouse ceiling.' },
+      luxurydraping: { title: 'Luxury Draping', calc: g => 3000, desc: 'Criss cross draping with chandelier hung in the Gatehouse ceiling.' },
+      discoball: { title: 'Disco Ball', calc: g => 400, desc: 'Disco ball, rotating motor and pin spot lights.' }
+    };
+
+    const BASE_ITEMS = [
+      { key: 'venue', Category: 'Venue (Lionsgate)', PricingModel: 'flat', Default: 0, required: true },
+      { key: 'planning', Category: 'Planning & Coordination', PricingModel: 'flat', Default: 0, required: true },
+      { key: 'catering', Category: 'Catering', PricingModel: 'per_guest_dynamic', Default: 0, required: true },
+      { key: 'bar', Category: 'Bar Package', PricingModel: 'mixed', Default: 1, required: true },
+      { key: 'ent', Category: 'Entertainment', PricingModel: 'tier', Default: 1, required: true },
+      { key: 'photo', Category: 'Photography', PricingModel: 'tier', Default: 1, IncludeByDefault: false },
+      { key: 'video', Category: 'Videography', PricingModel: 'tier', Default: 1, IncludeByDefault: false },
+      { key: 'officiant', Category: 'Officiant', PricingModel: 'tier', Default: 1, IncludeByDefault: false },
+      { key: 'florals', Category: 'Florals', PricingModel: 'tier', Default: 1, IncludeByDefault: false },
+      { key: 'hairmakeup', Category: 'Hair & Makeup', PricingModel: 'tier', Default: 1, IncludeByDefault: false },
+      { key: 'transportation', Category: 'Transportation', PricingModel: 'tier', Default: 1, IncludeByDefault: false }
+    ];
+
+    const CALENDAR = { day: { saturday: 1.03, friday: 1.00, sunday: 0.97, weekday: 0.94 }, affects: new Set(['ent']) };
+    const TAX = { venue: 0.01935, vendors: 0.09205 };
+
+    let items = [];
+
+    const $ = (s, r = document) => r.querySelector(s);
+    const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+    const asMoney = n => `$${Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+    const getVal = (id, fallback = null) => {
+      const el = document.getElementById(id);
+      return el ? el.value : fallback;
+    };
+    const calendarMult = () => CALENDAR.day[getVal('dayPreset', 'saturday')] ?? 1.0;
+
+    function attachLogo() {
+      const el = $('#logo');
+      if (!el) return;
+      const candidate = window.LIONSGATE_LOGO_URL && window.LIONSGATE_LOGO_URL.trim() ? window.LIONSGATE_LOGO_URL.trim() : DEFAULT_LOGO_SVG;
+      el.addEventListener('error', () => { el.style.display = 'none'; });
+      el.src = candidate;
+    }
+
+    function cloneBase() {
+      return BASE_ITEMS.map(it => ({
+        ...it,
+        _value: it.Default,
+        IncludeByDefault: it.required ? true : it.IncludeByDefault !== false
+      }));
+    }
+
+    function applyCalendarAdjustments() {
+      const d = $('#dayPreset');
+      const badge = $('#calendarBadge');
+      if (d && badge) badge.textContent = d.selectedOptions[0].text;
+    }
+
+    function currentGuests() {
+      return Number(getVal('guests', 100));
+    }
+
+    function getCateringTiers() {
+      const mode = getVal('cateringPreset', 'dropoff');
+      const hoursSel = getVal('hoursPreset', '0');
+      if (mode === 'dropoff') return CATERING_PROFILES.dropoff(hoursSel);
+      if (mode === 'foodtruck') return CATERING_PROFILES.foodtruck();
+      if (mode === 'buffet') return CATERING_PROFILES.buffet();
+      if (mode === 'plated') return CATERING_PROFILES.plated();
+      if (mode === 'familystyle') return CATERING_PROFILES.familystyle();
+      if (mode === 'stations') return CATERING_PROFILES.stations();
+      return CATERING_PROFILES.dropoff(hoursSel);
+    }
+
+    function clampIndex(value, length) {
+      return Math.max(0, Math.min(length - 1, Number(value) || 0));
+    }
+
+    function getCateringSelection() {
+      const tiers = getCateringTiers();
+      const idx = items.findIndex(i => i.key === 'catering');
+      const rng = document.getElementById(`rng-${idx}`);
+      return tiers[clampIndex(rng?.value ?? 0, tiers.length)];
+    }
+
+    function getEntSelection() {
+      const idx = items.findIndex(i => i.key === 'ent');
+      const tiers = ENT_PROFILES[getVal('entPreset', 'dj')] || ENT_PROFILES.dj;
+      const rng = document.getElementById(`rng-${idx}`);
+      return tiers[clampIndex(rng?.value ?? 0, tiers.length)];
+    }
+
+    function getTierVendorSelection(key) {
+      const cfg = TIER_VENDORS[key];
+      const idx = items.findIndex(i => i.key === key);
+      const rng = document.getElementById(`rng-${idx}`);
+      return cfg.options[clampIndex(rng?.value ?? 0, cfg.options.length)];
+    }
+
+    function getTierVendorAmount(key, guests) {
+      const option = getTierVendorSelection(key);
+      return typeof option.calc === 'function' ? option.calc(guests) : option.price;
+    }
+
+    function getBarProfile() {
+      const idx = items.findIndex(i => i.key === 'bar');
+      const rng = document.getElementById(`rng-${idx}`);
+      const key = BAR_ORDER[clampIndex(rng?.value ?? 0, BAR_ORDER.length)];
+      return BAR_PROFILES[key] || BAR_PROFILES.none;
+    }
+
+    function computeGratuity() {
+      const pkg = getVal('planningPreset', 'month');
+      const base = GRAT_BASE[pkg] || GRAT_BASE.month;
+      const hrsSel = getVal('hoursPreset', '0');
+      const hrs = ADDL_HOURS[hrsSel] || ADDL_HOURS['0'];
+      let planner_addl = 0;
+      let addlNote = '';
+
+      if (hrsSel === 'all') {
+        planner_addl = 200;
+        addlNote = '+$200 (all-day)';
+      } else if (typeof hrs.hours === 'number' && hrs.hours > 0) {
+        planner_addl = 50 * hrs.hours;
+        addlNote = `+$${planner_addl} (${hrs.hours}h extension)`;
+      }
+
+      return {
+        planner_base: base.planner,
+        planner_addl,
+        setup: base.setup || 0,
+        total: base.planner + planner_addl + (base.setup || 0),
+        addlNote
+      };
+    }
+
+    function renderExtrasGroup() {
+      const host = document.getElementById('extrasGroup');
+      host.innerHTML = '';
+
+      Object.entries(ADDONS).forEach(([key, cfg]) => {
+        const amount = cfg.calc(currentGuests());
+        const card = document.createElement('div');
+        card.className = 'extra-item';
+        card.innerHTML = `
+          <div class="head">
+            <div class="name">${cfg.title}</div>
+            <div class="price" id="extra-price-${key}">${asMoney(amount)}</div>
+          </div>
+          <div class="meta">${cfg.desc}</div>
+          <div class="control">
+            <label class="toggle">
+              <span class="switch"><input type="checkbox" id="extra-inc-${key}" /><span class="sliderSwitch"></span></span>
+              Include in Estimate
+            </label>
+          </div>`;
+        host.appendChild(card);
+      });
+
+      Object.keys(ADDONS).forEach(key => {
+        document.getElementById(`extra-inc-${key}`)?.addEventListener('change', update);
+      });
+    }
+
+    function refreshAllExtras() {
+      const guests = currentGuests();
+      Object.entries(ADDONS).forEach(([key, cfg]) => {
+        const el = document.getElementById(`extra-price-${key}`);
+        if (el) el.textContent = asMoney(cfg.calc(guests));
+      });
+    }
+
+    function makeToggle(idx, checked) {
+      return `
+        <label class="toggle" style="margin-bottom:6px;">
+          <span class="switch"><input type="checkbox" class="inc" data-idx="${idx}" ${checked ? 'checked' : ''}/><span class="sliderSwitch"></span></span>
+          Include in Estimate
+        </label>`;
+    }
+
+    function renderSliders() {
+      const host = $('#sliders');
+      host.innerHTML = '';
+      const grid = document.createElement('div');
+      grid.className = 'slider-grid';
+
+      items.forEach((it, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const hdr = document.createElement('div');
+        hdr.className = 'flex';
+
+        const title = document.createElement('div');
+        const requiredText = it.required ? 'Required' : '';
+        const modelLabel = it.key === 'bar' ? '' : ((it.PricingModel || '').includes('per_guest') ? '(per guest)' : '(flat)');
+        title.innerHTML = `<strong>${it.Category}</strong> <span class="sub">${modelLabel}${requiredText ? (modelLabel ? ' · ' : '') + requiredText : ''}</span>`;
+        hdr.appendChild(title);
+
+        const value = document.createElement('div');
+        value.className = 'money';
+        value.id = `val-${idx}`;
+        hdr.appendChild(value);
+        card.appendChild(hdr);
+
+        const wrap = document.createElement('div');
+
+        if (it.key === 'venue') {
+          wrap.innerHTML = `
+            <div class="flex">
+              <label>Venue
+                <select id="venueSelect">
+                  ${Object.entries(VENUE_PRICES).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('')}
+                </select>
+              </label>
+              <div class="sub">Total shown at right. Breakdown below.</div>
+            </div>
+            <div class="descBox">
+              <div class="descText" style="width:100%">
+                <div class="sub" id="venueBaseLine"></div>
+                <div class="sub" id="venueHoursLine" style="padding-left:14px; opacity:.9"></div>
+              </div>
+            </div>`;
+        } else if (it.key === 'planning') {
+          wrap.innerHTML = `
+            <div class="sub">Selected package: <strong id="planningName"></strong> — <strong id="planningPrice"></strong></div>
+            <div class="descBox">
+              <div class="descText" style="width:100%">
+                <div class="sub" id="gratStatic"></div>
+                <div class="sub" id="gratAddon" style="padding-left:14px; opacity:.9"></div>
+              </div>
+            </div>`;
+        } else if (it.key === 'catering') {
+          const tiers = getCateringTiers();
+          wrap.innerHTML = `
+            <label style="display:block;margin-bottom:6px;">Catering Style
+              <select id="cateringPreset">
+                <option value="dropoff">Drop-off Catering / Self Catering</option>
+                <option value="foodtruck">Food Truck</option>
+                <option value="buffet">Buffet</option>
+                <option value="plated">Plated</option>
+                <option value="familystyle">Family Style</option>
+                <option value="stations">Stations</option>
+              </select>
+            </label>
+            <input type="range" id="rng-${idx}" min="0" max="${Math.max(0, tiers.length - 1)}" step="1" value="0" ${tiers.length === 1 ? 'disabled' : ''} />`;
+        } else if (it.key === 'bar') {
+          wrap.innerHTML = `
+            <label style="display:block;margin-bottom:6px;">Bar Package</label>
+            <input type="range" id="rng-${idx}" min="0" max="${BAR_ORDER.length - 1}" step="1" value="1" />`;
+        } else if (it.key === 'ent') {
+          const mode = getVal('entPreset', 'dj');
+          const tiers = ENT_PROFILES[mode] || ENT_PROFILES.dj;
+          wrap.innerHTML = `
+            <label style="display:block;margin-bottom:6px;">Entertainment
+              <select id="entPreset">
+                <option value="dj" ${mode === 'dj' ? 'selected' : ''}>DJ</option>
+                <option value="band" ${mode === 'band' ? 'selected' : ''}>Band</option>
+              </select>
+            </label>
+            <input type="range" id="rng-${idx}" min="0" max="${tiers.length - 1}" step="1" value="${mode === 'dj' ? 1 : 0}" />`;
+        } else {
+          const cfg = TIER_VENDORS[it.key];
+          wrap.innerHTML = `
+            ${makeToggle(idx, it.IncludeByDefault)}
+            <label style="display:block;margin-bottom:6px;">${cfg.title} Package</label>
+            <input type="range" id="rng-${idx}" min="0" max="${cfg.options.length - 1}" step="1" value="${it._value ?? 1}" />`;
+        }
+
+        card.appendChild(wrap);
+
+        const desc = document.createElement('div');
+        desc.className = 'descBox';
+        desc.innerHTML = `<div class="descText sub" id="desc-${idx}"></div>`;
+        card.appendChild(desc);
+        grid.appendChild(card);
+      });
+
+      host.appendChild(grid);
+
+      document.getElementById('venueSelect')?.addEventListener('change', update);
+      document.getElementById('cateringPreset')?.addEventListener('change', () => {
+        const idx = items.findIndex(i => i.key === 'catering');
+        const rng = document.getElementById(`rng-${idx}`);
+        const tiers = getCateringTiers();
+        if (rng) {
+          rng.max = String(Math.max(0, tiers.length - 1));
+          rng.disabled = tiers.length === 1;
+          rng.value = getVal('cateringPreset', 'dropoff') === 'buffet' ? String(Math.min(1, tiers.length - 1)) : '0';
+        }
+        update();
+      });
+      document.getElementById('entPreset')?.addEventListener('change', () => {
+        const idx = items.findIndex(i => i.key === 'ent');
+        const rng = document.getElementById(`rng-${idx}`);
+        const mode = getVal('entPreset', 'dj');
+        const tiers = ENT_PROFILES[mode] || ENT_PROFILES.dj;
+        if (rng) {
+          rng.max = String(tiers.length - 1);
+          rng.value = mode === 'dj' ? '1' : '0';
+        }
+        update();
+      });
+      $$('#sliders input[type="range"]').forEach(r => r.addEventListener('input', update));
+      $$('#sliders .inc').forEach(c => c.addEventListener('change', update));
+    }
+
+    function updateValueLabels() {
+      const guests = currentGuests();
+      const mult = calendarMult();
+      const hrs = ADDL_HOURS[getVal('hoursPreset', '0')] || ADDL_HOURS['0'];
+
+      items.forEach((it, idx) => {
+        const out = document.getElementById(`val-${idx}`);
+        if (!out) return;
+
+        if (it.key === 'venue') {
+          const v = VENUE_PRICES[document.getElementById('venueSelect')?.value || 'gatehouse'];
+          const base = v[getVal('dayPreset', 'saturday')] || 0;
+          const total = base + (hrs.price || 0);
+          const eventHours = 5 + (hrs.displayHours || 0);
+          out.textContent = asMoney(total);
+          document.getElementById('venueBaseLine').textContent = `${v.label} — ${asMoney(base)}`;
+          const hoursLine = document.getElementById('venueHoursLine');
+          hoursLine.textContent = `${eventHours} event hours included${hrs.price ? ` — Additional hours ${asMoney(hrs.price)}` : ''}`;
+          hoursLine.style.display = 'block';
+          return;
+        }
+
+        if (it.key === 'planning') {
+          const pkg = PLANNING[getVal('planningPreset', 'month')] || PLANNING.month;
+          const g = computeGratuity();
+          document.getElementById('planningName').textContent = pkg.label;
+          document.getElementById('planningPrice').textContent = asMoney(pkg.price);
+          const setupLabel = getVal('planningPreset', 'month') === 'full' ? 'Setup assistant/content creator' : 'Setup assistant';
+          document.getElementById('gratStatic').textContent = getVal('planningPreset', 'month') === 'month'
+            ? `Gratuities: Planner — ${asMoney(g.planner_base)} (no setup assistant)`
+            : `Gratuities: Planner — ${asMoney(g.planner_base)}; ${setupLabel} — ${asMoney(g.setup)}`;
+          document.getElementById('gratAddon').textContent = g.planner_addl > 0 ? `↳ Add-on gratuity ${g.addlNote}` : '';
+          out.textContent = asMoney(pkg.price + g.total);
+          return;
+        }
+
+        if (it.key === 'catering') {
+          const tier = getCateringSelection();
+          const pp = tier.price;
+          out.textContent = `${asMoney(pp)} × ${guests} = ${asMoney(pp * guests)} • ${tier.label}`;
+          return;
+        }
+
+        if (it.key === 'bar') {
+          const p = getBarProfile();
+          if (p.model === 'per_guest') {
+            const pp = p.price;
+            out.textContent = `${asMoney(pp)} × ${guests} = ${asMoney(pp * guests)} • ${p.label}`;
+          } else {
+            out.textContent = `${asMoney(p.price)} • ${p.label}`;
+          }
+          return;
+        }
+
+        if (it.key === 'ent') {
+          const sel = getEntSelection();
+          const scaled = sel.price * mult;
+          out.textContent = `${asMoney(scaled)} • ${sel.label}`;
+          return;
+        }
+
+        const amount = getTierVendorAmount(it.key, guests);
+        const sel = getTierVendorSelection(it.key);
+        out.textContent = `${asMoney(amount)} • ${TIER_VENDORS[it.key].title} — ${sel.label}`;
+      });
+
+      refreshAllExtras();
+    }
+
+    function updateDescriptions() {
+      const guests = currentGuests();
+      items.forEach((it, idx) => {
+        const dEl = document.getElementById(`desc-${idx}`);
+        if (!dEl) return;
+
+        if (it.key === 'venue') {
+          const hrs = ADDL_HOURS[getVal('hoursPreset', '0')] || ADDL_HOURS['0'];
+          const eventHours = 5 + (hrs.displayHours || 0);
+          dEl.textContent = `Venue rental for ${(document.getElementById('dayPreset')?.selectedOptions?.[0]?.text) || 'Saturday'} • ${eventHours} event hours included${hrs.price ? ` (+${hrs.displayHours} hrs extension)` : ''}.`;
+        } else if (it.key === 'planning') {
+          const sel = getVal('planningPreset', 'month');
+          const pkg = PLANNING[sel] || PLANNING.month;
+          const g = computeGratuity();
+          const setupLabel = sel === 'full' ? 'Setup assistant/content creator' : 'Setup assistant';
+          let text = `${pkg.desc} Gratuities: Planner ${asMoney((GRAT_BASE[sel] || GRAT_BASE.month).planner)}${sel === 'month' ? ' (no setup assistant)' : ` • ${setupLabel} ${asMoney((GRAT_BASE[sel] || GRAT_BASE.month).setup || 0)}`}.`;
+          if (g.planner_addl > 0) text += ` Add-on gratuity ${g.addlNote}.`;
+          dEl.textContent = text;
+        } else if (it.key === 'catering') {
+          const tier = getCateringSelection();
+          dEl.textContent = `${tier.desc} Pricing shown is before tax and scales with guest count (x${guests}).${getVal('cateringPreset', 'dropoff') === 'dropoff' ? ' (Service fee only—food not included.)' : ''}`;
+        } else if (it.key === 'bar') {
+          const p = getBarProfile();
+          dEl.textContent = p.desc + (p.model === 'per_guest' ? ` Pricing shown is before tax and scales with guest count (x${guests}).` : ' Pricing shown is before tax.');
+        } else if (it.key === 'ent') {
+          dEl.textContent = getEntSelection().desc;
+        } else {
+          dEl.textContent = getTierVendorSelection(it.key).desc;
+        }
+      });
+    }
+
+    function compute() {
+      const guests = currentGuests();
+      const mult = calendarMult();
+      let subtotal = 0;
+      let vendorSubtotal = 0;
+      let venueAmt = 0;
+      const lines = [];
+      const venueChoice = document.getElementById('venueSelect')?.value || 'gatehouse';
+      const dayKey = getVal('dayPreset', 'saturday');
+      const addlHoursAmt = (ADDL_HOURS[getVal('hoursPreset', '0')] || ADDL_HOURS['0']).price || 0;
+
+      items.forEach((it, idx) => {
+        const included = it.required ? true : (document.querySelector(`#sliders .inc[data-idx="${idx}"]`)?.checked ?? false);
+        let amount = 0;
+        let category = it.Category;
+        let pricingModel = 'flat';
+
+        if (it.key === 'venue') {
+          const v = VENUE_PRICES[venueChoice];
+          amount = (v[dayKey] || 0) + addlHoursAmt;
+          venueAmt += amount;
+          subtotal += amount;
+          lines.push({ it: { Category: `${v.label} (Venue)`, PricingModel: 'flat' }, included: true, amount });
+          if (addlHoursAmt > 0) {
+            lines.push({ it: { Category: '↳ Venue — Additional Hours', PricingModel: 'flat' }, included: true, amount: addlHoursAmt });
+          }
+          return;
+        }
+
+        if (it.key === 'planning') {
+          const pkg = PLANNING[getVal('planningPreset', 'month')] || PLANNING.month;
+          const g = computeGratuity();
+          const total = pkg.price + g.total;
+          subtotal += total;
+          lines.push({ it: { Category: 'Planning & Coordination — Package', PricingModel: 'flat' }, included: true, amount: pkg.price });
+          lines.push({ it: { Category: '↳ Planner gratuity — base', PricingModel: 'flat' }, included: true, amount: g.planner_base });
+          if (g.setup > 0) {
+            lines.push({ it: { Category: getVal('planningPreset', 'month') === 'full' ? '↳ Setup assistant/content creator gratuity — base' : '↳ Setup assistant gratuity — base', PricingModel: 'flat' }, included: true, amount: g.setup });
+          }
+          if (g.planner_addl > 0) {
+            lines.push({ it: { Category: getVal('hoursPreset', '0') === 'all' ? '↳ Planner gratuity — all-day add-on' : `↳ Planner gratuity — ${ADDL_HOURS[getVal('hoursPreset', '0')].hours}h add-on`, PricingModel: 'flat' }, included: true, amount: g.planner_addl });
+          }
+          lines.push({ it: { Category: 'Planning & Coordination — Total', PricingModel: 'flat' }, included: true, amount: total });
+          return;
+        }
+
+        if (it.key === 'catering') {
+          const tier = getCateringSelection();
+          amount = tier.price * guests;
+          category = `Catering — ${tier.label}`;
+          pricingModel = 'per_guest';
+        } else if (it.key === 'bar') {
+          const p = getBarProfile();
+          amount = p.model === 'per_guest' ? p.price * guests : p.price;
+          category = `Bar — ${p.label}`;
+          pricingModel = p.model === 'per_guest' ? 'per_guest' : 'flat';
+        } else if (it.key === 'ent') {
+          const sel = getEntSelection();
+          amount = sel.price * mult;
+          category = `Entertainment — ${sel.label}`;
+        } else {
+          const sel = getTierVendorSelection(it.key);
+          amount = getTierVendorAmount(it.key, guests);
+          category = `${TIER_VENDORS[it.key].title} — ${sel.label}`;
+        }
+
+        if (included) {
+          subtotal += amount;
+          vendorSubtotal += amount;
+        }
+
+        lines.push({ it: { Category: category, PricingModel: pricingModel }, included, amount });
+      });
+
+      Object.entries(ADDONS).forEach(([key, cfg]) => {
+        const included = document.getElementById(`extra-inc-${key}`)?.checked ?? false;
+        const amount = included ? cfg.calc(guests) : 0;
+        lines.push({ it: { Category: cfg.title, PricingModel: 'flat' }, included, amount });
+        if (included) {
+          subtotal += amount;
+          vendorSubtotal += amount;
+        }
+      });
+
+      const taxes = venueAmt * TAX.venue + vendorSubtotal * TAX.vendors;
+      const grand = subtotal + taxes;
+      const pp = guests ? grand / guests : 0;
+      return { guests, subtotal, taxes, grand, pp, lines };
+    }
+
+    function renderTable(lines) {
+      const tbody = $('#table tbody');
+      tbody.innerHTML = '';
+      lines.forEach(({ it, included, amount }) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${it.Category}</td><td>${included ? 'Yes' : 'No'}</td><td>${(it.PricingModel || '').includes('per_guest') ? 'Per Guest' : 'Flat'}</td><td class="money">${asMoney(amount)}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function update() {
+      const { guests, subtotal, taxes, grand, pp, lines } = compute();
+      document.getElementById('guestsOut').textContent = guests;
+      document.getElementById('subtotalOut').textContent = asMoney(subtotal);
+      document.getElementById('extrasOut').textContent = asMoney(taxes);
+      document.getElementById('grandOut').textContent = asMoney(grand);
+      document.getElementById('ppOut').textContent = asMoney(pp.toFixed(2));
+      renderTable(lines);
+      updateValueLabels();
+      updateDescriptions();
+    }
+
+    function assert(name, cond) {
+      if (cond) console.log('✅', name);
+      else console.error('❌', name);
+    }
+
+    function runTests() {
+      try {
+        assert('items initialized', Array.isArray(items) && items.length === 11);
+        assert('catering function exists', typeof getCateringTiers === 'function');
+        assert('slider grid exists', !!document.querySelector('#sliders .slider-grid'));
+        assert('slider cards render', document.querySelectorAll('#sliders .slider-grid > .card').length === items.length);
+        assert('add-ons render', document.querySelectorAll('#extrasGroup .extra-item').length === Object.keys(ADDONS).length);
+        assert('vendor tax is 9.205%', TAX.vendors === 0.09205);
+        assert('bar none is $500', BAR_PROFILES.none.price === 500);
+        const computed = compute();
+        const photoLine = computed.lines.find(l => l.it.Category.startsWith('Photography —'));
+        assert('optional slider items default excluded', !!photoLine && photoLine.included === false);
+        const venueDesc = document.getElementById(`desc-${items.findIndex(i => i.key === 'venue')}`)?.textContent || '';
+        assert('venue hours description present', venueDesc.includes('event hours included'));
+      } catch (e) {
+        console.warn('tests skipped', e);
+      }
+    }
+
+    function start() {
+      attachLogo();
+      items = cloneBase();
+      applyCalendarAdjustments();
+      renderSliders();
+      renderExtrasGroup();
+      document.getElementById('guests')?.addEventListener('input', () => { refreshAllExtras(); update(); });
+      document.getElementById('planningPreset')?.addEventListener('change', update);
+      document.getElementById('dayPreset')?.addEventListener('change', () => { applyCalendarAdjustments(); update(); });
+      document.getElementById('hoursPreset')?.addEventListener('change', update);
+      update();
+      runTests();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', start);
+    } else {
+      start();
+    }
+  </script>
+</body>
+</html>
