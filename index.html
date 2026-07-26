@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lionsgate Wedding Budget Estimator — Version 1.0.3</title>
+  <title>Lionsgate Wedding Budget Estimator — Version 1.0.5</title>
   <style>
     :root {
       --bg:#f7f6f3;
@@ -908,6 +908,18 @@
         50%{transform:scale(1.08);}
       }
 
+      @media (prefers-reduced-motion: reduce) {
+        .mobile-estimate-chevron {
+          animation:none;
+          transition:none;
+        }
+
+        .estimate-breakdown-line,
+        .mobile-estimate-shell.expanded .mobile-estimate-panel {
+          animation:none;
+        }
+      }
+
       .mobile-estimate-shell.expanded .mobile-estimate-chevron {
         transform:rotate(180deg) scale(1);
         animation:none;
@@ -1237,15 +1249,15 @@
 
 
       <div class="card">
-        <h2>Style Enhancements</h2>
-        <div class="sub" style="margin-bottom:12px;">Your venue already includes the essential furniture, linens, tabletop pieces, and glassware needed for a beautiful wedding. These optional rentals are popular ways couples personalize the look of their celebration.</div>
-        <div id="designUpgradeCards" class="upgrade-grid"></div>
-      </div>
-
-      <div class="card">
         <h2>Core Vendors</h2>
         <div class="sub" style="margin-bottom:12px;">The wedding-day essentials. These are the vendor categories that do the heavy lifting—food, drinks, music, photography, florals, and the pieces most couples choose to create a seamless wedding experience.</div>
         <div id="coreCards" class="slider-grid"></div>
+      </div>
+
+      <div class="card">
+        <h2>Style Enhancements</h2>
+        <div class="sub" style="margin-bottom:12px;">Your venue already includes the essential furniture, linens, tabletop pieces, and glassware needed for a beautiful wedding. These optional rentals are popular ways couples personalize the look of their celebration.</div>
+        <div id="designUpgradeCards" class="upgrade-grid"></div>
       </div>
 
       <div class="card">
@@ -1303,9 +1315,9 @@
   </div>
 
   <div class="mobile-estimate-shell" id="mobileEstimateShell">
-    <button type="button" class="mobile-estimate-toggle" id="mobileEstimateToggle" aria-expanded="false" aria-controls="mobileEstimatePanel">
+    <button type="button" class="mobile-estimate-toggle" id="mobileEstimateToggle" aria-expanded="false" aria-controls="mobileEstimatePanel" aria-label="Open full estimate" title="Open full estimate">
       <span>
-        <small>Estimated Total • Tap to Expand</small>
+        <small id="mobileEstimatePrompt">Estimated Total • Tap to Expand</small>
         <strong class="money" id="mobileGrandOut">$0</strong>
       </span>
       <span class="mobile-estimate-chevron" aria-hidden="true">↑</span>
@@ -1328,7 +1340,7 @@
   </div>
 
   <script>
-    // Lionsgate Wedding Budget Estimator — Version 1.0.3
+    // Lionsgate Wedding Budget Estimator — Version 1.0.5
     const VENUE_PRICES = {
       gatehouse:{ label:'The Gatehouse', weekday:6000, friday:9000, saturday:12000, sunday:7000 },
       dovehouse:{ label:'The Dove House', weekday:5000, friday:8000, saturday:10000, sunday:6000 }
@@ -2559,6 +2571,14 @@
       scheduleMobileEstimateClearance();
     }
 
+    function estimateBreakdownLineTotal(){
+      return getEstimateBreakdown().sections.reduce(
+        (sectionTotal,section)=>sectionTotal + section.lines.reduce(
+          (lineTotal,line)=>lineTotal + Number(line.amount || 0),0
+        ),0
+      );
+    }
+
     function runTests(){
       try {
         console.log('✅ Estimator initialized', BASE_ITEMS.length, 'items');
@@ -2584,6 +2604,8 @@
         console.assert(typeof updateMobileEstimateClearance === 'function', 'Mobile estimate reserves bottom-page clearance');
         console.assert(BAR_ORDER.length === 5, 'All five bar packages are available');
         console.assert(document.querySelectorAll('.tier-labels').length > 0, 'Responsive tier labels rendered');
+        console.assert(Math.abs(estimateBreakdownLineTotal() - compute().subtotal) < 0.01, 'Live proposal line items match subtotal');
+        console.assert(document.getElementById('mobileEstimatePrompt'), 'Mobile estimate interaction prompt rendered');
       } catch(e) {
         console.warn('Tests skipped', e);
       }
@@ -2670,7 +2692,12 @@
       const mobileToggle = $('#mobileEstimateToggle');
       mobileToggle?.addEventListener('click',()=>{
         const expanded = mobileShell?.classList.toggle('expanded') ?? false;
+        const actionLabel = expanded ? 'Close full estimate' : 'Open full estimate';
         mobileToggle.setAttribute('aria-expanded',String(expanded));
+        mobileToggle.setAttribute('aria-label',actionLabel);
+        mobileToggle.setAttribute('title',actionLabel);
+        const prompt = document.getElementById('mobileEstimatePrompt');
+        if(prompt) prompt.textContent = expanded ? 'Estimated Total • Tap to Close' : 'Estimated Total • Tap to Expand';
         scheduleMobileEstimateClearance();
       });
 
