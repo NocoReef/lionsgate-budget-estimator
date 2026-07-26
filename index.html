@@ -223,6 +223,117 @@
       border:1px solid rgba(0,0,0,.05);
       border-radius:10px;
     }
+
+    .upgrade-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .upgrade-card { border:1px solid var(--border); border-radius:16px; background:#fff; padding:15px; box-shadow:0 8px 22px rgba(0,0,0,.035); }
+    .upgrade-card h3 { margin:0 0 6px; font-family:Georgia,"Times New Roman",serif; font-size:1.05rem; font-weight:600; }
+    .included-box { background:var(--accent-soft); border:1px solid rgba(111,133,119,.16); border-radius:12px; padding:10px 11px; margin:10px 0 12px; }
+    .included-label { color:var(--accent-2); font-weight:800; font-size:.86rem; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
+    .upgrade-option { border-top:1px solid var(--border); padding-top:11px; margin-top:11px; }
+    .upgrade-option:first-of-type { border-top:0; padding-top:0; margin-top:0; }
+    .upgrade-option .option-title { font-weight:700; }
+    .upgrade-option .option-note { color:var(--muted); font-size:.88rem; margin-top:3px; }
+    .upgrade-price { font-weight:800; white-space:nowrap; }
+    .upgrade-choice { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-top:8px; }
+    .upgrade-choice label { flex:1; }
+    .upgrade-summary { margin-top:12px; border-radius:12px; background:#faf9f7; padding:10px 11px; color:var(--muted); font-size:.9rem; }
+    @media(max-width:900px) { .upgrade-grid { grid-template-columns:1fr; } }
+
+
+    /* Final mobile refinements */
+    html { -webkit-text-size-adjust:100%; }
+    img, svg { max-width:100%; height:auto; }
+
+    select,
+    input,
+    button {
+      font:inherit;
+    }
+
+    select {
+      max-width:100%;
+    }
+
+    .upgrade-choice,
+    .extra-item .head,
+    .flex {
+      min-width:0;
+    }
+
+    .upgrade-choice > *,
+    .extra-item .head > *,
+    .flex > * {
+      min-width:0;
+    }
+
+    @media(max-width:700px) {
+      .tier-labels {
+        gap:3px;
+        font-size:.7rem;
+      }
+
+      .tier-labels span {
+        white-space:normal;
+        line-height:1.15;
+        padding:4px 2px;
+      }
+
+      .upgrade-choice {
+        flex-direction:column;
+        align-items:stretch;
+      }
+
+      .upgrade-price {
+        padding-left:54px;
+        white-space:normal;
+      }
+
+      .extra-item .head {
+        flex-direction:column;
+      }
+
+      .extra-item .price {
+        white-space:normal;
+      }
+    }
+
+    @media(max-width:420px) {
+      body {
+        padding:9px;
+      }
+
+      .card {
+        padding:12px;
+        border-radius:13px;
+      }
+
+      .venue-control,
+      .upgrade-card,
+      .extra-item {
+        padding:11px;
+      }
+
+      .tier-labels {
+        font-size:.64rem;
+      }
+
+      .tier-labels span {
+        padding:4px 1px;
+      }
+
+      .selected-package {
+        font-size:.86rem;
+      }
+
+      .slider-hint {
+        font-size:.78rem;
+      }
+
+      .totals .money {
+        font-size:1rem;
+      }
+    }
+
   </style>
 </head>
 
@@ -266,8 +377,10 @@
               <option value="friday">Friday</option>
               <option value="sunday">Sunday</option>
               <option value="weekday" selected>Weekday (Mon–Thu)</option>
+              <option value="holiday">Holiday Weekend / Major Holiday</option>
             </select>
             <div class="small" id="calendarBadge">Weekday (Mon–Thu)</div>
+            <div class="small" id="holidayPricingNote" style="display:none;color:#6f8577;font-weight:600;margin-top:7px;">Holiday pricing uses Saturday venue rates and reflects 50% higher staffing and gratuity costs.</div>
           </div>
 
           <div class="venue-control">
@@ -297,6 +410,13 @@
         <div id="venueCards" class="venue-cards-polished"></div>
       </div>
 
+
+      <div class="card">
+        <h2>Style Enhancements</h2>
+        <div class="sub" style="margin-bottom:12px;">Your venue already includes the essential furniture, linens, tabletop pieces, and glassware needed for a beautiful wedding. These optional rentals are popular ways couples personalize the look of their celebration.</div>
+        <div id="designUpgradeCards" class="upgrade-grid"></div>
+      </div>
+
       <div class="card">
         <h2>Core Vendors</h2>
         <div class="sub" style="margin-bottom:12px;">The wedding-day essentials. These are the vendor categories that do the heavy lifting—food, drinks, music, photography, florals, and the pieces most couples choose to create a seamless wedding experience.</div>
@@ -318,7 +438,7 @@
 
     <div class="card">
       <h2>Totals</h2>
-      <div class="totals">
+      <div class="totals" aria-live="polite">
         <div class="pill">
           <div class="sub">Subtotal (before tax)</div>
           <div class="money" id="subtotalOut">$0</div>
@@ -510,6 +630,18 @@
       }
     };
 
+
+    const DESIGN_UPGRADES = {
+      tables:{title:'Tables',included:()=> 'Standard guest tables are included in the venue cost.',options:[{key:'farmtables',label:'Farm Tables',note:'A popular statement piece for head tables, family tables, or the full reception. Seats 8 guests per table.',calc:g=>Math.ceil(g/8)*265,priceLabel:g=>`${Math.ceil(g/8)} tables × $265`}]},
+      chairs:{title:'Chairs',included:()=> 'White resin chairs are included for outdoor ceremonies, and mahogany Chiavari chairs are included for indoor receptions.',options:[{key:'crossbackchairs',label:'Crossback Chairs',note:'A warm, elevated chair style often chosen for receptions or ceremony seating.',calc:g=>g*20,priceLabel:g=>`${g} chairs × $20`}]},
+      linens:{title:'Linens',included:p=>p==='month'?'Black, white, and ivory linens are included with Month-of Planning.':'Choose from approximately 90 linen colors and styles with Partial or Full-Service Planning.',options:[{key:'floralpatternlinens',label:'Floral Pattern Linens',note:'A popular design upgrade for guest tables, head tables, cake tables, or select statement tables.',calc:g=>Math.ceil(g/8)*75,priceLabel:g=>`${Math.ceil(g/8)} linens × $75`}]},
+      napkins:{title:'Napkins',included:p=>p==='month'?'Black, white, and ivory napkins are included with Month-of Planning.':'Choose from approximately 90 napkin colors and styles with Partial or Full-Service Planning.',options:[{key:'velvetnapkins',label:'Velvet Napkins',note:'A rich texture that adds depth and color to each place setting.',calc:g=>g*6,priceLabel:g=>`${g} napkins × $6`}]},
+      chargers:{title:'Chargers',included:p=>p==='month'?'Chargers are not included with Month-of Planning.':'Gold or silver chargers are included with Partial or Full-Service Planning.',options:[{key:'glasschargers',label:'Glass Chargers',note:'A common upgrade for a more refined or layered place setting.',calc:g=>g*15,priceLabel:g=>`${g} chargers × $15`}]},
+      flatware:{title:'Flatware',included:()=> 'A complete standard place setting is included: salad fork, dinner fork, dinner knife, and soup spoon.',options:[{key:'specialtyflatware',label:'Gold or Black Flatware',note:'A full upgraded flatware set for every guest.',calc:g=>g*10,priceLabel:g=>`${g} place settings × $10`}]},
+      china:{title:'China',included:()=> 'Standard 4", 6", 8", and 10" plates, plus coffee mugs, are included in the venue cost.',options:[{key:'specialtychina',label:'Specialty China',note:'Upgrade the full place setting with a distinctive china collection.',calc:g=>g*10,priceLabel:g=>`${g} place settings × $10`}]},
+      glassware:{title:'Glassware',included:()=> 'White wine, red wine, water, champagne, rocks, beer, and martini glasses are included in the venue cost.',options:[{key:'coloredwaterglasses',label:'Colored Water Glasses',note:'A simple, high-impact way to bring color to each place setting.',calc:g=>g*4,priceLabel:g=>`${g} glasses × $4`},{key:'fullupgradedglassware',label:'Full Upgraded Glassware Set',note:'A coordinated upgraded glassware collection for the full place setting.',calc:g=>g*15,priceLabel:g=>`${g} place settings × $15`}]}
+    };
+
     const ADDONS = {
       coffeecart:{ title:'Coffee Cart', calc:g=>3000, desc:'1 hour of coffees for guests.' },
       seafoodcart:{ title:'Seafood Cart', calc:g=>70*g, desc:'Seafood cart offering oysters and tartar for cocktail hour.' },
@@ -554,6 +686,9 @@
     const asMoney = n=>`$${Number(n).toLocaleString(undefined,{maximumFractionDigits:2})}`;
     const getVal = (id,f=null)=>document.getElementById(id)?.value ?? f;
     const currentGuests = ()=>Number(getVal('guests',100));
+    const isHoliday = ()=>getVal('dayPreset','weekday') === 'holiday';
+    const venuePricingDay = ()=>isHoliday() ? 'saturday' : getVal('dayPreset','weekday');
+    const holidayLaborMultiplier = ()=>isHoliday() ? 1.5 : 1;
 
     function cloneBase(){
       return BASE_ITEMS.map(it=>({
@@ -650,12 +785,18 @@
         addlNote = `+$${planner_addl} (${hrs.hours}h extension)`;
       }
 
+      const multiplier = holidayLaborMultiplier();
+      const plannerBaseAdjusted = base.planner * multiplier;
+      const plannerAddlAdjusted = planner_addl * multiplier;
+      const setupAdjusted = (base.setup || 0) * multiplier;
+
       return {
-        planner_base:base.planner,
-        planner_addl,
-        setup:base.setup || 0,
-        total:base.planner + planner_addl + (base.setup || 0),
-        addlNote
+        planner_base:plannerBaseAdjusted,
+        planner_addl:plannerAddlAdjusted,
+        setup:setupAdjusted,
+        total:plannerBaseAdjusted + plannerAddlAdjusted + setupAdjusted,
+        addlNote,
+        multiplier
       };
     }
 
@@ -725,6 +866,31 @@
         <div class="selected-package" id="selected-package-${idx}"></div>
         <div class="slider-hint" id="slider-hint-${idx}"></div>
       `;
+    }
+
+
+    function renderDesignUpgrades(){
+      const host=document.getElementById('designUpgradeCards'); if(!host) return; host.innerHTML='';
+      const guests=currentGuests(), planning=getVal('planningPreset','month');
+      Object.entries(DESIGN_UPGRADES).forEach(([category,cfg])=>{
+        const card=document.createElement('div'); card.className='upgrade-card';
+        const opts=cfg.options.map(opt=>`<div class="upgrade-option"><div class="upgrade-choice"><label class="toggle"><span class="switch"><input type="checkbox" class="design-upgrade-inc" id="upgrade-${opt.key}"><span class="sliderSwitch"></span></span><span><span class="option-title">${opt.label}</span><span class="option-note" style="display:block">${opt.note}</span></span></label><div class="upgrade-price" id="upgrade-price-${opt.key}">${asMoney(opt.calc(guests))}</div></div><div class="upgrade-summary" id="upgrade-summary-${opt.key}">${opt.priceLabel(guests)} = ${asMoney(opt.calc(guests))}</div></div>`).join('');
+        card.innerHTML=`<h3>${cfg.title}</h3><div class="included-box"><div class="included-label">Included in Venue Cost</div><div id="included-${category}">${cfg.included(planning)}</div></div><div class="sub" style="font-weight:700;margin-bottom:6px;">Commonly rented items</div>${opts}`;
+        host.appendChild(card);
+      });
+      host.querySelectorAll('.design-upgrade-inc').forEach(el=>el.addEventListener('change',update));
+    }
+    function refreshDesignUpgrades(){
+      const guests=currentGuests(), planning=getVal('planningPreset','month');
+      Object.entries(DESIGN_UPGRADES).forEach(([category,cfg])=>{
+        const inc=document.getElementById(`included-${category}`); if(inc) inc.textContent=cfg.included(planning);
+        cfg.options.forEach(opt=>{ const p=document.getElementById(`upgrade-price-${opt.key}`); if(p) p.textContent=asMoney(opt.calc(guests)); const s=document.getElementById(`upgrade-summary-${opt.key}`); if(s) s.textContent=`${opt.priceLabel(guests)} = ${asMoney(opt.calc(guests))}`; });
+      });
+    }
+    function computeDesignUpgradeTotal(){
+      const guests=currentGuests(); let total=0;
+      Object.values(DESIGN_UPGRADES).forEach(cfg=>cfg.options.forEach(opt=>{ if(document.getElementById(`upgrade-${opt.key}`)?.checked) total+=opt.calc(guests); }));
+      return total;
     }
 
     function renderExtrasGroup(){
@@ -920,7 +1086,7 @@
         if(!out) return;
 
         if(it.key === 'venue'){
-          const day = getVal('dayPreset','weekday');
+          const day = venuePricingDay();
           const venueKey = getVal('venueSelect','dovehouse');
           const v = VENUE_PRICES[venueKey] || VENUE_PRICES.dovehouse;
           const base = v[day] || 0;
@@ -947,17 +1113,20 @@
           const setupLabel = getVal('planningPreset','month') === 'full' ? 'Setup assistant/content creator' : 'Setup assistant';
 
           $('#gratStatic').textContent = getVal('planningPreset','month') === 'month'
-            ? `Gratuities: Planner — ${asMoney(g.planner_base)} (no setup assistant)`
-            : `Gratuities: Planner — ${asMoney(g.planner_base)}; ${setupLabel} — ${asMoney(g.setup)}`;
+            ? `Gratuities: Planner — ${asMoney(g.planner_base)} (no setup assistant)${isHoliday()?' • Holiday rate':''}`
+            : `Gratuities: Planner — ${asMoney(g.planner_base)}; ${setupLabel} — ${asMoney(g.setup)}${isHoliday()?' • Holiday rate':''}`;
 
-          $('#gratAddon').textContent = g.planner_addl > 0 ? `↳ Add-on gratuity ${g.addlNote}` : '';
+          $('#gratAddon').textContent = g.planner_addl > 0
+            ? `↳ Add-on gratuity — ${asMoney(g.planner_addl)}${isHoliday()?' holiday-adjusted':''}`
+            : '';
           out.textContent = asMoney(pkg.price + g.total);
           return;
         }
 
         if(it.key === 'catering'){
           const tier = getCateringSelection();
-          out.textContent = `${asMoney(tier.price)} × ${guests} = ${asMoney(tier.price*guests)} • ${tier.label}`;
+          const adjustedPP = tier.price * holidayLaborMultiplier();
+          out.textContent = `${asMoney(adjustedPP)} × ${guests} = ${asMoney(adjustedPP*guests)} • ${tier.label}`;
           return;
         }
 
@@ -985,6 +1154,7 @@
       });
 
       refreshAllExtras();
+      refreshDesignUpgrades();
       refreshTierHints();
     }
 
@@ -997,7 +1167,7 @@
 
         if(it.key === 'venue'){
           const hrs = ADDL_HOURS[getVal('hoursPreset','0')] || ADDL_HOURS['0'];
-          const day = getVal('dayPreset','weekday');
+          const day = venuePricingDay();
           const venueKey = getVal('venueSelect','dovehouse');
           const v = VENUE_PRICES[venueKey] || VENUE_PRICES.dovehouse;
           const base = v[day] || 0;
@@ -1007,7 +1177,7 @@
           const hours = 5 + ((ADDL_HOURS[getVal('hoursPreset','0')] || ADDL_HOURS['0']).displayHours || 0);
 
           const rows = [
-            `<div><strong>${v.label}</strong> — ${asMoney(base)}</div>`,
+            `<div><strong>${v.label}</strong> — ${asMoney(base)}${isHoliday()?' <span style="color:#6f8577">(Saturday venue rate)</span>':''}</div>`,
             `<div><strong>${hours} event hours included</strong>${hrs.price?` — Additional hours ${asMoney(hrs.price)}`:''}</div>`
           ];
 
@@ -1045,13 +1215,17 @@
             ? ' (no setup assistant)'
             : ` • ${sel === 'full' ? 'Setup assistant/content creator' : 'Setup assistant'} ${asMoney((GRAT_BASE[sel] || GRAT_BASE.month).setup || 0)}`;
 
-          d.textContent = `${pkg.desc} Gratuities: Planner ${asMoney((GRAT_BASE[sel] || GRAT_BASE.month).planner)}${setup}.${g.planner_addl>0?` Add-on gratuity ${g.addlNote}.`:''}`;
+          const holidayNote = isHoliday() ? ' Holiday gratuities are 50% higher.' : '';
+          d.textContent = `${pkg.desc} Gratuities: Planner ${asMoney(g.planner_base)}${sel==='month'?' (no setup assistant)':` • ${sel==='full'?'Setup assistant/content creator':'Setup assistant'} ${asMoney(g.setup)}`}.${g.planner_addl>0?` Add-on gratuity ${asMoney(g.planner_addl)}.`:''}${holidayNote}`;
           return;
         }
 
         if(it.key === 'catering'){
           const tier = getCateringSelection();
-          d.innerHTML = `${guestNoteHTML(guests)}${tier.desc} Pricing shown is before tax and scales with guest count.`;
+          const holidayNote = isHoliday()
+            ? `<br><br><span style="color:#6f8577"><strong>Holiday staffing:</strong> Base estimate ${asMoney(tier.price)} per guest + 50% holiday staffing surcharge = ${asMoney(tier.price*1.5)} per guest.</span>`
+            : '';
+          d.innerHTML = `${guestNoteHTML(guests)}${tier.desc} Pricing shown is before tax and scales with guest count.${holidayNote}`;
           return;
         }
 
@@ -1099,7 +1273,7 @@
       let subtotal = 0;
       const taxBuckets = { venue:0, vendor:0 };
       const venueChoice = getVal('venueSelect','dovehouse');
-      const day = getVal('dayPreset','weekday');
+      const day = venuePricingDay();
       const addl = (ADDL_HOURS[getVal('hoursPreset','0')] || ADDL_HOURS['0']).price || 0;
 
       items.forEach((it,idx)=>{
@@ -1122,7 +1296,7 @@
           const pkg = PLANNING[getVal('planningPreset','month')] || PLANNING.month;
           amount = pkg.price + computeGratuity().total;
         } else if(it.key === 'catering'){
-          amount = getCateringSelection().price * guests;
+          amount = getCateringSelection().price * guests * holidayLaborMultiplier();
         } else if(it.key === 'bar'){
           const p = getBarProfile();
           amount = p.model === 'per_guest' ? getBarPerGuestPrice(p) * guests : p.price;
@@ -1146,6 +1320,10 @@
           addTaxableAmount(taxBuckets,'vendor',amount);
         }
       });
+
+      const designUpgradeTotal = computeDesignUpgradeTotal();
+      subtotal += designUpgradeTotal;
+      addTaxableAmount(taxBuckets,'vendor',designUpgradeTotal);
 
       const taxes = taxBuckets.venue*TAX.venue + taxBuckets.vendor*TAX.vendors;
       const grand = subtotal + taxes;
@@ -1172,6 +1350,12 @@
         console.assert(ENT_PROFILES.dj[0].price === 1750 && ENT_PROFILES.dj[2].price === 3000, 'DJ pricing');
         console.assert(TIER_VENDORS.photo.tiers[0].price === 2750, 'Photo Budget $2750');
         console.assert(typeof getTotalBarHours === 'function', 'Total bar hours helper exists');
+        console.assert(typeof venuePricingDay === 'function', 'Holiday venue pricing helper exists');
+        console.assert(typeof holidayLaborMultiplier === 'function', 'Holiday labor multiplier helper exists');
+        console.assert(DESIGN_UPGRADES.tables.options[0].calc(100) === 3445, 'Farm tables calculate correctly');
+        console.assert(DESIGN_UPGRADES.chairs.options[0].calc(100) === 2000, 'Crossback chairs calculate correctly');
+        console.assert(DESIGN_UPGRADES.linens.options[0].calc(100) === 975, 'Floral linens calculate correctly');
+        console.assert(DESIGN_UPGRADES.glassware.options[1].calc(100) === 1500, 'Full glassware calculates correctly');
       } catch(e) {
         console.warn('Tests skipped', e);
       }
@@ -1181,14 +1365,19 @@
       items = cloneBase();
       const dayEl = $('#dayPreset');
       if(dayEl) $('#calendarBadge').textContent = dayEl.selectedOptions[0].text;
+      const holidayNote = $('#holidayPricingNote');
+      if(holidayNote) holidayNote.style.display = isHoliday() ? 'block' : 'none';
 
       renderSliders();
+      renderDesignUpgrades();
       renderExtrasGroup();
 
       $('#guests')?.addEventListener('input',update);
       $('#planningPreset')?.addEventListener('change',update);
       $('#dayPreset')?.addEventListener('change',()=>{
         $('#calendarBadge').textContent = $('#dayPreset').selectedOptions[0].text;
+        const note = $('#holidayPricingNote');
+        if(note) note.style.display = isHoliday() ? 'block' : 'none';
         update();
       });
       $('#hoursPreset')?.addEventListener('change',update);
