@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lionsgate Wedding Budget Estimator — Version 1.0.5</title>
+  <title>Lionsgate Wedding Budget Estimator — Version 1.0.7</title>
   <style>
     :root {
       --bg:#f7f6f3;
@@ -808,6 +808,12 @@
     }
 
     .mobile-estimate-shell {
+        position:fixed;
+        left:12px;
+        right:12px;
+        bottom:max(12px, env(safe-area-inset-bottom));
+        width:auto;
+        z-index:9999;
       display:none;
     }
 
@@ -1169,7 +1175,16 @@
       }
     }
 
-  </style>
+  
+    @media(min-width:700px) and (max-width:999px){
+      .mobile-estimate-shell{
+        left:50%;
+        right:auto;
+        width:min(680px, calc(100vw - 32px));
+        transform:translateX(-50%);
+      }
+    }
+</style>
 </head>
 
 <body>
@@ -1340,7 +1355,7 @@
   </div>
 
   <script>
-    // Lionsgate Wedding Budget Estimator — Version 1.0.5
+    // Lionsgate Wedding Budget Estimator — Version 1.0.7
     const VENUE_PRICES = {
       gatehouse:{ label:'The Gatehouse', weekday:6000, friday:9000, saturday:12000, sunday:7000 },
       dovehouse:{ label:'The Dove House', weekday:5000, friday:8000, saturday:10000, sunday:6000 }
