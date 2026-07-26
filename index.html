@@ -462,6 +462,222 @@
       }
     }
 
+  
+    /* Final polish */
+    .upgrade-card {
+      font-family:inherit;
+      font-size:inherit;
+      line-height:inherit;
+    }
+
+    .upgrade-grid {
+      gap:16px;
+    }
+
+    .estimate-actions {
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:center;
+      margin:18px 0 14px;
+    }
+
+    .estimate-button {
+      appearance:none;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:var(--card);
+      color:var(--ink);
+      padding:10px 16px;
+      font:inherit;
+      font-size:.9rem;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.05);
+      transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
+    }
+
+    .estimate-button:hover {
+      transform:translateY(-1px);
+      box-shadow:0 7px 16px rgba(0,0,0,.08);
+      border-color:rgba(111,133,119,.45);
+    }
+
+    .estimate-button:active {
+      transform:translateY(0);
+    }
+
+    .estimate-button.primary {
+      background:var(--accent);
+      border-color:var(--accent);
+      color:#fff;
+    }
+
+    .estimate-button-feedback {
+      width:100%;
+      min-height:1.25em;
+      text-align:center;
+      color:var(--accent-2);
+      font-size:.86rem;
+    }
+
+    .value-updated {
+      animation:valuePulse .18s ease;
+    }
+
+    @keyframes valuePulse {
+      0% { opacity:.58; transform:translateY(2px); }
+      100% { opacity:1; transform:translateY(0); }
+    }
+
+    .totals .pill {
+      transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+    }
+
+    .totals-updated .pill {
+      animation:totalCardPulse .18s ease;
+    }
+
+    @keyframes totalCardPulse {
+      0% { transform:translateY(2px); background:#eeebe5; }
+      100% { transform:translateY(0); background:#f3f1ed; }
+    }
+
+    #printProposal {
+      display:none;
+    }
+
+    @media(max-width:600px) {
+      .estimate-actions {
+        display:grid;
+        grid-template-columns:1fr;
+      }
+
+      .estimate-button {
+        width:100%;
+      }
+    }
+
+    @media print {
+      @page {
+        size:letter;
+        margin:.55in;
+      }
+
+      body {
+        background:#fff !important;
+        color:#222 !important;
+      }
+
+      body > *:not(#printProposal) {
+        display:none !important;
+      }
+
+      #printProposal {
+        display:block !important;
+        font-family:Arial,Helvetica,sans-serif;
+        color:#222;
+      }
+
+      .print-header {
+        border-bottom:3px solid #6f8577;
+        padding-bottom:14px;
+        margin-bottom:18px;
+      }
+
+      .print-brand {
+        font-family:Georgia,'Times New Roman',serif;
+        font-size:28px;
+        font-weight:700;
+        margin:0 0 4px;
+      }
+
+      .print-subtitle {
+        color:#666;
+        font-size:13px;
+      }
+
+      .print-summary-grid {
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:10px;
+        margin-bottom:18px;
+      }
+
+      .print-summary-box {
+        border:1px solid #ddd;
+        border-radius:8px;
+        padding:10px;
+      }
+
+      .print-summary-label {
+        color:#666;
+        font-size:11px;
+        text-transform:uppercase;
+        letter-spacing:.06em;
+        margin-bottom:3px;
+      }
+
+      .print-summary-value {
+        font-size:16px;
+        font-weight:700;
+      }
+
+      .print-section {
+        break-inside:avoid;
+        margin:0 0 16px;
+      }
+
+      .print-section h2 {
+        font-family:Georgia,'Times New Roman',serif;
+        font-size:18px;
+        margin:0 0 7px;
+        color:#38443d;
+      }
+
+      .print-line {
+        display:flex;
+        justify-content:space-between;
+        gap:20px;
+        border-bottom:1px solid #eee;
+        padding:6px 0;
+        font-size:12px;
+      }
+
+      .print-line strong {
+        white-space:nowrap;
+      }
+
+      .print-total {
+        border-top:2px solid #6f8577;
+        margin-top:16px;
+        padding-top:12px;
+      }
+
+      .print-total-row {
+        display:flex;
+        justify-content:space-between;
+        padding:4px 0;
+        font-size:13px;
+      }
+
+      .print-total-row.grand {
+        font-size:20px;
+        font-weight:800;
+        color:#38443d;
+      }
+
+      .print-disclaimer {
+        margin-top:20px;
+        padding:12px;
+        border-left:3px solid #6f8577;
+        background:#f6f5f2;
+        font-size:11px;
+        line-height:1.5;
+        color:#555;
+      }
+    }
+
   </style>
 </head>
 
@@ -508,7 +724,7 @@
               <option value="holiday">Holiday Weekend / Major Holiday</option>
             </select>
             <div class="small" id="calendarBadge">Weekday (Mon–Thu)</div>
-            <div class="small" id="holidayPricingNote" style="display:none;color:#6f8577;font-weight:600;margin-top:7px;">Holiday pricing uses Saturday venue rates and reflects 50% higher staffing and gratuity costs.</div>
+            <div class="small" id="holidayPricingNote" style="display:none;color:#6f8577;font-weight:600;margin-top:7px;">Holiday pricing uses Saturday venue rates. Lionsgate planning gratuities and drop-off catering staffing are 50% higher; other vendor holiday fees are quoted separately.</div>
           </div>
 
           <div class="venue-control">
@@ -566,6 +782,13 @@
 
     <div class="card">
       <h2>Totals</h2>
+      <div class="estimate-actions" aria-label="Estimate actions">
+        <button type="button" class="estimate-button" id="resetEstimate">Reset Estimate</button>
+        <button type="button" class="estimate-button primary" id="shareEstimate">Share this Estimate</button>
+        <button type="button" class="estimate-button" id="printEstimate">Print / Save PDF</button>
+        <div class="estimate-button-feedback" id="estimateActionFeedback" aria-live="polite"></div>
+      </div>
+
       <div class="totals" aria-live="polite">
         <div class="pill">
           <div class="sub">Subtotal (before tax)</div>
@@ -817,6 +1040,7 @@
     const isHoliday = ()=>getVal('dayPreset','weekday') === 'holiday';
     const venuePricingDay = ()=>isHoliday() ? 'saturday' : getVal('dayPreset','weekday');
     const holidayLaborMultiplier = ()=>isHoliday() ? 1.5 : 1;
+    const cateringHolidayMultiplier = ()=>isHoliday() && getVal('cateringPreset','dropoff') === 'dropoff' ? 1.5 : 1;
 
     function cloneBase(){
       return BASE_ITEMS.map(it=>({
@@ -1253,7 +1477,7 @@
 
         if(it.key === 'catering'){
           const tier = getCateringSelection();
-          const adjustedPP = tier.price * holidayLaborMultiplier();
+          const adjustedPP = tier.price * cateringHolidayMultiplier();
           out.textContent = `${asMoney(adjustedPP)} × ${guests} = ${asMoney(adjustedPP*guests)} • ${tier.label}`;
           return;
         }
@@ -1350,9 +1574,12 @@
 
         if(it.key === 'catering'){
           const tier = getCateringSelection();
-          const holidayNote = isHoliday()
-            ? `<br><br><span style="color:#6f8577"><strong>Holiday staffing:</strong> Base estimate ${asMoney(tier.price)} per guest + 50% holiday staffing surcharge = ${asMoney(tier.price*1.5)} per guest.</span>`
-            : '';
+          const cateringMode = getVal('cateringPreset','dropoff');
+          const holidayNote = !isHoliday()
+            ? ''
+            : cateringMode === 'dropoff'
+              ? `<br><br><span style="color:#6f8577"><strong>Holiday staffing included:</strong> Lionsgate's staffing estimate increases by 50%, from ${asMoney(tier.price)} to ${asMoney(tier.price*1.5)} per guest.</span>`
+              : `<br><br><span style="color:#6f8577"><strong>Holiday pricing:</strong> This estimate may be subject to additional holiday staffing, service, or vendor fees. Any applicable surcharge will be determined and quoted by the selected caterer or food vendor.</span>`;
           d.innerHTML = `${guestNoteHTML(guests)}${tier.desc} Pricing shown is before tax and scales with guest count.${holidayNote}`;
           return;
         }
@@ -1424,7 +1651,7 @@
           const pkg = PLANNING[getVal('planningPreset','month')] || PLANNING.month;
           amount = pkg.price + computeGratuity().total;
         } else if(it.key === 'catering'){
-          amount = getCateringSelection().price * guests * holidayLaborMultiplier();
+          amount = getCateringSelection().price * guests * cateringHolidayMultiplier();
         } else if(it.key === 'bar'){
           const p = getBarProfile();
           amount = p.model === 'per_guest' ? getBarPerGuestPrice(p) * guests : p.price;
@@ -1459,12 +1686,266 @@
       return { guests, subtotal, taxes, grand, taxBuckets };
     }
 
+
+    let lastDisplayedTotals = { subtotal:0, taxes:0, grand:0 };
+    let totalAnimationFrame = null;
+    let isRestoringEstimate = false;
+
+    function animateMoneyValue(element, from, to, duration=180){
+      if(!element) return;
+      const start = performance.now();
+      const delta = to - from;
+
+      function step(now){
+        const progress = Math.min(1,(now-start)/duration);
+        const eased = 1 - Math.pow(1-progress,3);
+        element.textContent = asMoney(from + delta*eased);
+        if(progress < 1){
+          totalAnimationFrame = requestAnimationFrame(step);
+        } else {
+          element.textContent = asMoney(to);
+          element.classList.remove('value-updated');
+          void element.offsetWidth;
+          element.classList.add('value-updated');
+        }
+      }
+
+      totalAnimationFrame = requestAnimationFrame(step);
+    }
+
+    function animateTotals(result){
+      if(totalAnimationFrame) cancelAnimationFrame(totalAnimationFrame);
+
+      animateMoneyValue($('#subtotalOut'),lastDisplayedTotals.subtotal,result.subtotal);
+      animateMoneyValue($('#extrasOut'),lastDisplayedTotals.taxes,result.taxes);
+      animateMoneyValue($('#grandOut'),lastDisplayedTotals.grand,result.grand);
+
+      lastDisplayedTotals = {
+        subtotal:result.subtotal,
+        taxes:result.taxes,
+        grand:result.grand
+      };
+
+      const totals = document.querySelector('.totals');
+      if(totals){
+        totals.classList.remove('totals-updated');
+        void totals.offsetWidth;
+        totals.classList.add('totals-updated');
+      }
+    }
+
+    function getEstimateState(){
+      const state = {};
+      document.querySelectorAll('select[id], input[id]').forEach(el=>{
+        if(el.type === 'checkbox') state[el.id] = el.checked;
+        else state[el.id] = el.value;
+      });
+      return state;
+    }
+
+    function encodeEstimateState(state){
+      const json = JSON.stringify(state);
+      const bytes = new TextEncoder().encode(json);
+      let binary = '';
+      bytes.forEach(byte=>binary += String.fromCharCode(byte));
+      return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    }
+
+    function decodeEstimateState(value){
+      try {
+        const normalized = value.replace(/-/g,'+').replace(/_/g,'/');
+        const padded = normalized + '='.repeat((4-normalized.length%4)%4);
+        const binary = atob(padded);
+        const bytes = Uint8Array.from(binary,ch=>ch.charCodeAt(0));
+        return JSON.parse(new TextDecoder().decode(bytes));
+      } catch(error){
+        console.warn('Could not restore shared estimate',error);
+        return null;
+      }
+    }
+
+    function getSharedStateFromUrl(){
+      const params = new URLSearchParams(location.search);
+      const encoded = params.get('estimate');
+      return encoded ? decodeEstimateState(encoded) : null;
+    }
+
+    function applyStateToExistingControls(state){
+      if(!state) return;
+      Object.entries(state).forEach(([id,value])=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        if(el.type === 'checkbox') el.checked = Boolean(value);
+        else el.value = String(value);
+      });
+    }
+
+    function restoreSharedEstimate(){
+      const state = getSharedStateFromUrl();
+      if(!state) return false;
+
+      isRestoringEstimate = true;
+
+      // First apply controls that exist in the original document.
+      applyStateToExistingControls(state);
+
+      // Render controls using the restored top-level choices.
+      renderSliders();
+      renderDesignUpgrades();
+      renderExtrasGroup();
+
+      // Apply generated controls, then rerender once more so catering and
+      // entertainment tier structures reflect their restored modes.
+      applyStateToExistingControls(state);
+      renderSliders();
+      renderDesignUpgrades();
+      renderExtrasGroup();
+      applyStateToExistingControls(state);
+
+      const dayEl = $('#dayPreset');
+      if(dayEl) $('#calendarBadge').textContent = dayEl.selectedOptions[0]?.text || '';
+      const note = $('#holidayPricingNote');
+      if(note) note.style.display = isHoliday() ? 'block' : 'none';
+
+      isRestoringEstimate = false;
+      return true;
+    }
+
+    function setActionFeedback(message){
+      const feedback = $('#estimateActionFeedback');
+      if(!feedback) return;
+      feedback.textContent = message;
+      window.clearTimeout(setActionFeedback.timer);
+      setActionFeedback.timer = window.setTimeout(()=>feedback.textContent='',3500);
+    }
+
+    async function shareEstimate(){
+      const state = getEstimateState();
+      const url = new URL(location.href);
+      url.search = '';
+      url.hash = '';
+      url.searchParams.set('estimate',encodeEstimateState(state));
+
+      try {
+        await navigator.clipboard.writeText(url.toString());
+        setActionFeedback('Shareable estimate link copied to your clipboard.');
+      } catch(error){
+        window.prompt('Copy this shareable estimate link:',url.toString());
+      }
+    }
+
+    function resetEstimate(){
+      const cleanUrl = new URL(location.href);
+      cleanUrl.search = '';
+      cleanUrl.hash = '';
+      location.href = cleanUrl.toString();
+    }
+
+    function selectedText(id,fallback=''){
+      const el = document.getElementById(id);
+      return el?.selectedOptions?.[0]?.text || fallback;
+    }
+
+    function buildPrintProposal(){
+      const result = compute();
+      const guests = result.guests;
+      const lines = [];
+
+      const venue = VENUE_PRICES[getVal('venueSelect','dovehouse')] || VENUE_PRICES.dovehouse;
+      const barn = CHANDELIER_BARN[getVal('barnSelect','none')] || CHANDELIER_BARN.none;
+      const dayLabel = selectedText('dayPreset','');
+      const planning = PLANNING[getVal('planningPreset','month')] || PLANNING.month;
+      const catering = getCateringSelection();
+      const cateringMode = selectedText('cateringPreset','Catering');
+      const bar = getBarProfile();
+      const entertainment = getEntSelection();
+
+      lines.push(['Venue',`${venue.label} — ${dayLabel}`]);
+      if(barn.label !== 'None') lines.push(['Chandelier Barn',barn.label]);
+      lines.push(['Planning & Coordination',planning.label]);
+      lines.push(['Catering',`${cateringMode} — ${catering.label}`]);
+      lines.push(['Bar Package',bar.label]);
+      lines.push(['Entertainment',`${selectedText('entPreset','Entertainment')} — ${entertainment.label}`]);
+
+      items.forEach((it,idx)=>{
+        if(['venue','planning','catering','bar','ent'].includes(it.key)) return;
+        const included = it.required || isItemIncluded(idx);
+        if(!included) return;
+
+        if(it.key === 'mountain'){
+          lines.push([it.Category,selectedText('mountainSelect','Mountain Ceremony')]);
+        } else {
+          const selected = getTierVendorSelection(it.key);
+          lines.push([it.Category,selected.label]);
+        }
+      });
+
+      Object.entries(DESIGN_UPGRADES).forEach(([,cfg])=>{
+        cfg.options.forEach(opt=>{
+          if(document.getElementById(`upgrade-${opt.key}`)?.checked){
+            lines.push([`Style Enhancement — ${cfg.title}`,opt.label]);
+          }
+        });
+      });
+
+      Object.entries(ADDONS).forEach(([key,cfg])=>{
+        if(document.getElementById(`extra-inc-${key}`)?.checked){
+          lines.push(['Additional Add-On',cfg.title]);
+        }
+      });
+
+      const lineHtml = lines.map(([label,value])=>
+        `<div class="print-line"><span>${label}</span><strong>${value}</strong></div>`
+      ).join('');
+
+      const proposal = $('#printProposal');
+      proposal.innerHTML = `
+        <div class="print-header">
+          <div class="print-brand">Lionsgate Wedding Estimate</div>
+          <div class="print-subtitle">Personalized planning estimate generated ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</div>
+        </div>
+
+        <div class="print-summary-grid">
+          <div class="print-summary-box">
+            <div class="print-summary-label">Guest Count</div>
+            <div class="print-summary-value">${guests}</div>
+          </div>
+          <div class="print-summary-box">
+            <div class="print-summary-label">Venue</div>
+            <div class="print-summary-value">${venue.label}</div>
+          </div>
+          <div class="print-summary-box">
+            <div class="print-summary-label">Date Type</div>
+            <div class="print-summary-value">${dayLabel}</div>
+          </div>
+        </div>
+
+        <div class="print-section">
+          <h2>Estimate Selections</h2>
+          ${lineHtml}
+        </div>
+
+        <div class="print-total">
+          <div class="print-total-row"><span>Subtotal</span><strong>${asMoney(result.subtotal)}</strong></div>
+          <div class="print-total-row"><span>Estimated Taxes</span><strong>${asMoney(result.taxes)}</strong></div>
+          <div class="print-total-row grand"><span>Estimated Total</span><strong>${asMoney(result.grand)}</strong></div>
+        </div>
+
+        <div class="print-disclaimer">
+          This is a planning estimate, not a final proposal or guaranteed price. Actual pricing may change based on event date, availability, final guest count, selected vendors, taxes, service fees, holiday pricing, and customized event details.
+        </div>
+      `;
+    }
+
+    function printEstimate(){
+      buildPrintProposal();
+      window.print();
+    }
+
     function update(){
       const result = compute();
       $('#guestsOut').textContent = result.guests;
-      $('#subtotalOut').textContent = asMoney(result.subtotal);
-      $('#extrasOut').textContent = asMoney(result.taxes);
-      $('#grandOut').textContent = asMoney(result.grand);
+      animateTotals(result);
       updateValueLabels();
       updateDescriptions();
     }
@@ -1480,6 +1961,7 @@
         console.assert(typeof getTotalBarHours === 'function', 'Total bar hours helper exists');
         console.assert(typeof venuePricingDay === 'function', 'Holiday venue pricing helper exists');
         console.assert(typeof holidayLaborMultiplier === 'function', 'Holiday labor multiplier helper exists');
+        console.assert(typeof cateringHolidayMultiplier === 'function', 'Catering holiday multiplier helper exists');
         console.assert(DESIGN_UPGRADES.tables.options[0].calc(100) === 3445, 'Farm tables calculate correctly');
         console.assert(DESIGN_UPGRADES.chairs.options[0].calc(100) === 2000, 'Crossback chairs calculate correctly');
         console.assert(DESIGN_UPGRADES.linens.options[0].calc(100) === 975, 'Floral linens calculate correctly');
@@ -1496,9 +1978,12 @@
       const holidayNote = $('#holidayPricingNote');
       if(holidayNote) holidayNote.style.display = isHoliday() ? 'block' : 'none';
 
-      renderSliders();
-      renderDesignUpgrades();
-      renderExtrasGroup();
+      const restored = restoreSharedEstimate();
+      if(!restored){
+        renderSliders();
+        renderDesignUpgrades();
+        renderExtrasGroup();
+      }
 
       $('#guests')?.addEventListener('input',update);
       $('#planningPreset')?.addEventListener('change',update);
@@ -1509,6 +1994,9 @@
         update();
       });
       $('#hoursPreset')?.addEventListener('change',update);
+      $('#resetEstimate')?.addEventListener('click',resetEstimate);
+      $('#shareEstimate')?.addEventListener('click',shareEstimate);
+      $('#printEstimate')?.addEventListener('click',printEstimate);
 
       update();
       runTests();
@@ -1517,5 +2005,6 @@
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',start);
     else start();
   </script>
+  <div id="printProposal" aria-hidden="true"></div>
 </body>
 </html>
