@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lionsgate Wedding Budget Estimator</title>
+  <title>Lionsgate Wedding Budget Estimator — Version 1.0.3</title>
   <style>
     :root {
       --bg:#f7f6f3;
@@ -84,6 +84,9 @@
 
     @media(max-width:600px) {
       body { padding:12px; }
+      .tier-labels { gap:3px; }
+      .tier-labels span { font-size:.64rem; min-height:34px; padding:4px 2px; }
+      select { width:100%; }
       .brand h1 { font-size:1.35rem; }
       .card { padding:14px; margin-bottom:12px; }
       .flex { flex-direction:column; align-items:stretch; }
@@ -558,6 +561,457 @@
       }
     }
 
+
+
+    /* Version 1.0.1 sizing and overflow hardening */
+    html, body {
+      max-width:100%;
+      overflow-x:hidden;
+    }
+
+    img, svg, video, canvas {
+      max-width:100%;
+      height:auto;
+    }
+
+    .container,
+    .card,
+    .pill,
+    .extra-item,
+    .upgrade-card,
+    .venue-control,
+    .estimator-main,
+    .estimate-rail,
+    .slider-grid > *,
+    .extras-grid > *,
+    .row > *,
+    .venue-control-grid > *,
+    .venue-cards-polished > *,
+    .upgrade-grid > * {
+      min-width:0;
+    }
+
+    select,
+    input,
+    button,
+    textarea {
+      max-width:100%;
+      font:inherit;
+    }
+
+    select {
+      min-width:0;
+    }
+
+    .pill,
+    .extra-item,
+    .upgrade-card,
+    .venue-control,
+    .descBox,
+    .included-box,
+    .upgrade-option,
+    .selected-package,
+    .slider-hint,
+    .sub {
+      overflow-wrap:anywhere;
+    }
+
+    .tier-labels {
+      display:grid;
+      grid-template-columns:repeat(var(--tier-count, 5),minmax(0,1fr));
+      align-items:stretch;
+      gap:5px;
+      width:100%;
+    }
+
+    .tier-labels span {
+      min-width:0;
+      white-space:normal;
+      overflow-wrap:anywhere;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      line-height:1.15;
+      min-height:30px;
+      padding:4px 3px;
+      font-size:clamp(.65rem, .8vw, .78rem);
+    }
+
+    .estimate-breakdown-line,
+    .mobile-breakdown-line,
+    .estimate-total-row,
+    .mobile-estimate-totals > div {
+      min-width:0;
+    }
+
+    .estimate-breakdown-line span,
+    .mobile-breakdown-line span,
+    .estimate-total-row span,
+    .mobile-estimate-totals span {
+      min-width:0;
+      overflow-wrap:anywhere;
+    }
+
+    /* Version 1.0 responsive live proposal */
+    .estimator-layout {
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 310px;
+      gap:22px;
+      align-items:start;
+    }
+
+    .estimator-main {
+      min-width:0;
+    }
+
+    .estimate-rail {
+      min-width:0;
+    }
+
+    .estimate-rail-card {
+      position:fixed;
+      z-index:50;
+      top:220px;
+      right:max(22px, calc((100vw - 1100px) / 2));
+      width:310px;
+      max-width:calc(100vw - 44px);
+      max-height:calc(100vh - 36px);
+      overflow:auto;
+      overscroll-behavior:contain;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+      scrollbar-width:thin;
+    }
+
+    .estimate-eyebrow {
+      color:var(--accent-2);
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      font-size:.74rem;
+      font-weight:800;
+    }
+
+    .estimate-context {
+      margin-top:5px;
+      padding-bottom:14px;
+      border-bottom:1px solid var(--border);
+      color:var(--muted);
+      font-size:.88rem;
+      line-height:1.45;
+    }
+
+    .estimate-breakdown {
+      display:grid;
+      gap:15px;
+      padding:15px 0;
+    }
+
+    .estimate-breakdown-section {
+      display:grid;
+      gap:7px;
+    }
+
+    .estimate-breakdown-heading {
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:.68rem;
+      font-weight:800;
+    }
+
+    .estimate-breakdown-line {
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:10px;
+      align-items:start;
+      font-size:.86rem;
+      line-height:1.3;
+      animation:estimateLineIn .2s ease;
+    }
+
+    .estimate-breakdown-line span {
+      min-width:0;
+    }
+
+    .estimate-breakdown-line small {
+      display:block;
+      color:var(--muted);
+      font-size:.75rem;
+      margin-top:2px;
+    }
+
+    .estimate-breakdown-line strong {
+      white-space:nowrap;
+      font-variant-numeric:tabular-nums;
+    }
+
+    @keyframes estimateLineIn {
+      from { opacity:.35; transform:translateY(3px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+
+    .estimate-rail-totals {
+      display:grid;
+      gap:8px;
+      border-top:1px solid var(--border);
+      padding-top:14px;
+    }
+
+    .estimate-total-row {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:baseline;
+      font-size:.88rem;
+    }
+
+    .estimate-total-row.grand {
+      margin-top:3px;
+      padding:12px;
+      border-radius:13px;
+      background:#f3f1ed;
+      color:var(--ink);
+      font-size:1rem;
+      font-weight:800;
+    }
+
+    .estimate-total-row.grand strong {
+      font-size:1.28rem;
+    }
+
+    .estimate-rail-note {
+      margin:10px 2px 0;
+      color:var(--muted);
+      font-size:.74rem;
+      line-height:1.4;
+      text-align:center;
+    }
+
+    .estimate-rail-actions {
+      display:grid;
+      gap:8px;
+      margin-top:13px;
+    }
+
+    .estimate-rail-actions .estimate-button {
+      width:100%;
+      border-radius:11px;
+    }
+
+    .estimate-button.subtle {
+      box-shadow:none;
+      background:transparent;
+      color:var(--muted);
+    }
+
+    .mobile-estimate-shell {
+      display:none;
+    }
+
+    .final-estimate-note {
+      margin-bottom:40px;
+      scroll-margin-bottom:calc(var(--mobile-estimate-clearance, 78px) + 32px);
+    }
+
+
+    @media(min-width:1000px) and (max-width:1160px) {
+      .estimator-layout {
+        grid-template-columns:minmax(0,1fr) 292px;
+        gap:18px;
+      }
+
+      .estimate-rail-card {
+        width:292px;
+        right:22px;
+        padding:15px;
+      }
+    }
+
+    @media(max-width:999px) {
+      body {
+        padding-bottom:calc(var(--mobile-estimate-clearance, 78px) + 24px);
+      }
+
+      .estimator-layout {
+        display:block;
+      }
+
+      .estimate-rail {
+        display:none;
+      }
+
+      .mobile-estimate-shell {
+        display:block;
+        position:fixed;
+        z-index:1000;
+        left:12px;
+        right:12px;
+        bottom:12px;
+        border:1px solid var(--border);
+        border-radius:16px;
+        background:rgba(255,255,255,.98);
+        box-shadow:0 12px 34px rgba(0,0,0,.18);
+        overflow:hidden;
+        backdrop-filter:blur(10px);
+      }
+
+      .mobile-estimate-toggle {
+        appearance:none;
+        width:100%;
+        border:0;
+        background:transparent;
+        color:var(--ink);
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:14px;
+        padding:11px 15px;
+        text-align:left;
+        cursor:pointer;
+      }
+
+      .mobile-estimate-toggle small {
+        display:block;
+        color:var(--muted);
+        font-size:.72rem;
+        text-transform:uppercase;
+        letter-spacing:.07em;
+      }
+
+      .mobile-estimate-toggle strong {
+        display:block;
+        margin-top:1px;
+        font-size:1.16rem;
+      }
+
+      .mobile-estimate-chevron {
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        width:36px;
+        height:36px;
+        border-radius:50%;
+        background:var(--accent-2);
+        color:#fff;
+        font-size:1.4rem;
+        font-weight:700;
+        box-shadow:0 4px 12px rgba(0,0,0,.15);
+        transition:transform .25s ease, background .2s ease;
+        animation:estimatePulse 2.2s ease-in-out infinite;
+      }
+
+      @keyframes estimatePulse{
+        0%,100%{transform:scale(1);}
+        50%{transform:scale(1.08);}
+      }
+
+      .mobile-estimate-shell.expanded .mobile-estimate-chevron {
+        transform:rotate(180deg) scale(1);
+        animation:none;
+      }
+
+      .mobile-estimate-panel {
+        display:none;
+        max-height:min(68vh,560px);
+        overflow:auto;
+        border-top:1px solid var(--border);
+        padding:14px 15px 16px;
+      }
+
+      .mobile-estimate-shell.expanded .mobile-estimate-panel {
+        display:block;
+        animation:mobilePanelIn .2s ease;
+      }
+
+      @keyframes mobilePanelIn {
+        from { opacity:0; transform:translateY(6px); }
+        to { opacity:1; transform:translateY(0); }
+      }
+
+      .mobile-estimate-context {
+        color:var(--muted);
+        font-size:.82rem;
+        padding-bottom:10px;
+      }
+
+      .mobile-estimate-breakdown {
+        display:grid;
+        gap:6px;
+        max-height:190px;
+        overflow:auto;
+        padding:2px 0 10px;
+      }
+
+      .mobile-breakdown-line {
+        display:flex;
+        justify-content:space-between;
+        gap:12px;
+        font-size:.83rem;
+      }
+
+      .mobile-breakdown-line strong {
+        white-space:nowrap;
+      }
+
+      .mobile-estimate-totals {
+        display:grid;
+        gap:7px;
+        border-top:1px solid var(--border);
+        padding-top:11px;
+      }
+
+      .mobile-estimate-totals > div {
+        display:flex;
+        justify-content:space-between;
+        gap:12px;
+        font-size:.86rem;
+      }
+
+      .mobile-estimate-totals .grand {
+        margin-top:2px;
+        padding:10px;
+        border-radius:11px;
+        background:#f3f1ed;
+        font-weight:800;
+      }
+
+      .mobile-estimate-actions {
+        display:grid;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:7px;
+        margin-top:11px;
+      }
+
+      .mobile-estimate-actions .estimate-button {
+        padding:9px 7px;
+        border-radius:10px;
+        font-size:.8rem;
+      }
+
+      .final-estimate-note {
+        margin-bottom:20px;
+      }
+    }
+
+    @media(max-width:480px) {
+      .mobile-estimate-shell {
+        left:8px;
+        right:8px;
+        bottom:8px;
+      }
+
+      .mobile-estimate-actions {
+        grid-template-columns:1fr;
+      }
+
+      .mobile-estimate-panel {
+        max-height:72vh;
+      }
+    }
+
     @media print {
       @page {
         size:letter;
@@ -570,6 +1024,11 @@
       }
 
       body > *:not(#printProposal) {
+        display:none !important;
+      }
+
+      .estimate-rail,
+      .mobile-estimate-shell {
         display:none !important;
       }
 
@@ -649,6 +1108,13 @@
         text-align:right;
       }
 
+      .print-dots {
+        flex:1;
+        min-width:18px;
+        border-bottom:1px dotted #bbb;
+        transform:translateY(-4px);
+      }
+
       .print-line-name {
         font-weight:700;
       }
@@ -709,6 +1175,8 @@
       </div>
     </div>
 
+    <div class="estimator-layout">
+      <main class="estimator-main">
     <div id="sliders">
       <div class="card">
         <div class="venue-hero">
@@ -793,38 +1261,74 @@
       <div id="extrasGroup" class="extras-grid"></div>
     </div>
 
-    <div class="card">
-      <h2>Totals</h2>
-      <div class="estimate-actions" aria-label="Estimate actions">
-        <button type="button" class="estimate-button" id="resetEstimate">Reset Estimate</button>
-        <button type="button" class="estimate-button primary" id="shareEstimate">Share this Estimate</button>
-        <button type="button" class="estimate-button" id="printEstimate">Print / Save PDF</button>
-        <div class="estimate-button-feedback" id="estimateActionFeedback" aria-live="polite"></div>
-      </div>
+    <div class="card final-estimate-note">
+      <h2>Your Estimate Is Ready</h2>
+      <div class="sub" style="line-height:1.7;">Use the live estimate summary to review your selections, share the estimate, or create a clean printable proposal. This number is a planning estimate, not a pinky-promise final price. Your actual total may shift based on guest count, date, vendor choices, availability, taxes, fees, and all the details that make your wedding yours.</div>
+    </div>
+      </main>
 
-      <div class="totals" aria-live="polite">
-        <div class="pill">
-          <div class="sub">Subtotal (before tax)</div>
-          <div class="money" id="subtotalOut">$0</div>
-        </div>
-        <div class="pill">
-          <div class="sub">Estimated Taxes (Venue 1.935% • Vendors 9.205%)</div>
-          <div class="money" id="extrasOut">$0</div>
-        </div>
-        <div class="pill">
-          <div class="sub"><strong>Grand Total</strong></div>
-          <div class="money" id="grandOut" style="font-size:1.25rem;font-weight:800">$0</div>
-        </div>
-      </div>
+      <aside class="estimate-rail" aria-label="Live wedding estimate">
+        <div class="estimate-rail-card">
+          <div class="estimate-eyebrow">Your Wedding</div>
+          <div class="estimate-context" id="estimateContext">100 guests • The Dove House • Weekday</div>
 
-      <div style="margin-top:18px;padding:16px 18px;background:#faf8f5;border:1px solid rgba(0,0,0,.06);border-radius:14px;">
-        <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05rem;font-weight:600;margin-bottom:8px;">Planning Estimate</div>
-        <div class="sub" style="line-height:1.7;">This number is a planning estimate, not a pinky-promise final price. Your actual total may shift based on guest count, date, vendor choices, availability, taxes, fees, and all the little details that make your wedding yours.</div>
+          <div class="estimate-breakdown" id="liveEstimateBreakdown" aria-live="polite"></div>
+
+          <div class="estimate-rail-totals">
+            <div class="estimate-total-row">
+              <span>Subtotal</span>
+              <strong class="money" id="subtotalOut">$0</strong>
+            </div>
+            <div class="estimate-total-row">
+              <span>Estimated Taxes</span>
+              <strong class="money" id="extrasOut">$0</strong>
+            </div>
+            <div class="estimate-total-row grand">
+              <span>Estimated Total</span>
+              <strong class="money" id="grandOut">$0</strong>
+            </div>
+          </div>
+
+          <div class="estimate-rail-note">Planning estimate only. Final pricing may vary.</div>
+
+          <div class="estimate-rail-actions" aria-label="Estimate actions">
+            <button type="button" class="estimate-button primary" data-estimate-action="share">Share Estimate</button>
+            <button type="button" class="estimate-button" data-estimate-action="print">Print / Save PDF</button>
+            <button type="button" class="estimate-button subtle" data-estimate-action="reset">Reset</button>
+          </div>
+          <div class="estimate-button-feedback" data-estimate-feedback aria-live="polite"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="mobile-estimate-shell" id="mobileEstimateShell">
+    <button type="button" class="mobile-estimate-toggle" id="mobileEstimateToggle" aria-expanded="false" aria-controls="mobileEstimatePanel">
+      <span>
+        <small>Estimated Total • Tap to Expand</small>
+        <strong class="money" id="mobileGrandOut">$0</strong>
+      </span>
+      <span class="mobile-estimate-chevron" aria-hidden="true">↑</span>
+    </button>
+    <div class="mobile-estimate-panel" id="mobileEstimatePanel">
+      <div class="mobile-estimate-context" id="mobileEstimateContext">100 guests • The Dove House</div>
+      <div class="mobile-estimate-breakdown" id="mobileEstimateBreakdown"></div>
+      <div class="mobile-estimate-totals">
+        <div><span>Subtotal</span><strong class="money" id="mobileSubtotalOut">$0</strong></div>
+        <div><span>Estimated Taxes</span><strong class="money" id="mobileTaxesOut">$0</strong></div>
+        <div class="grand"><span>Estimated Total</span><strong class="money" id="mobilePanelGrandOut">$0</strong></div>
       </div>
+      <div class="mobile-estimate-actions">
+        <button type="button" class="estimate-button primary" data-estimate-action="share">Share</button>
+        <button type="button" class="estimate-button" data-estimate-action="print">Print</button>
+        <button type="button" class="estimate-button subtle" data-estimate-action="reset">Reset</button>
+      </div>
+      <div class="estimate-button-feedback" data-estimate-feedback aria-live="polite"></div>
     </div>
   </div>
 
   <script>
+    // Lionsgate Wedding Budget Estimator — Version 1.0.3
     const VENUE_PRICES = {
       gatehouse:{ label:'The Gatehouse', weekday:6000, friday:9000, saturday:12000, sunday:7000 },
       dovehouse:{ label:'The Dove House', weekday:5000, friday:8000, saturday:10000, sunday:6000 }
@@ -1185,7 +1689,7 @@
     }
 
     function renderSliderLabels(idx,labels){
-      return `<div class="tier-labels" id="tier-labels-${idx}">${labels.map((label,i)=>`<span data-tier="${i}">${label}</span>`).join('')}</div>`;
+      return `<div class="tier-labels" id="tier-labels-${idx}" style="--tier-count:${Math.max(1,labels.length)}">${labels.map((label,i)=>`<span data-tier="${i}">${label}</span>`).join('')}</div>`;
     }
 
     function updateTierLabelsFor(idx){
@@ -1825,11 +2329,13 @@
     }
 
     function setActionFeedback(message){
-      const feedback = $('#estimateActionFeedback');
-      if(!feedback) return;
-      feedback.textContent = message;
+      document.querySelectorAll('[data-estimate-feedback]').forEach(feedback=>{
+        feedback.textContent = message;
+      });
       window.clearTimeout(setActionFeedback.timer);
-      setActionFeedback.timer = window.setTimeout(()=>feedback.textContent='',3500);
+      setActionFeedback.timer = window.setTimeout(()=>{
+        document.querySelectorAll('[data-estimate-feedback]').forEach(feedback=>feedback.textContent='');
+      },3500);
     }
 
     async function shareEstimate(){
@@ -1859,14 +2365,20 @@
       return el?.selectedOptions?.[0]?.text || fallback;
     }
 
-    function buildPrintProposal(){
+    function getEstimateBreakdown(){
       const result = compute();
       const guests = result.guests;
-      const lines = [];
       const day = venuePricingDay();
+      const sections = {
+        foundation:{ title:'Wedding Foundation', lines:[] },
+        core:{ title:'Core Vendors', lines:[] },
+        enhancements:{ title:'Wedding Enhancements', lines:[] },
+        style:{ title:'Style Enhancements', lines:[] },
+        addons:{ title:'Additional Add-Ons', lines:[] }
+      };
 
-      function addPrintLine(label,detail,amount){
-        lines.push({
+      function add(section,label,detail,amount){
+        sections[section].lines.push({
           label,
           detail:detail || '',
           amount:Number(amount || 0)
@@ -1887,29 +2399,17 @@
 
       const venueBase = venue[day] || 0;
       const guestOverage = venueChoice === 'gatehouse' ? Math.max(0,guests-250)*22 : 0;
-      addPrintLine('Venue',`${venue.label} — ${dayLabel}`,venueBase + guestOverage);
+      add('foundation','Venue',`${venue.label} • ${dayLabel}`,venueBase + guestOverage);
 
-      if(barn.label !== 'None'){
-        addPrintLine('Chandelier Barn',barn.label,barn.price(day));
-      }
+      if(barn.label !== 'None') add('foundation','Chandelier Barn',barn.label,barn.price(day));
+      if((additionalHours.price || 0) > 0) add('foundation','Additional Hours',additionalHours.label,additionalHours.price);
+      add('foundation','Planning & Coordination',planning.label,planning.price + gratuity.total);
 
-      if((additionalHours.price || 0) > 0){
-        addPrintLine('Additional Hours',selectedText('hoursPreset',''),additionalHours.price);
-      }
+      add('core','Catering',cateringMode,catering.price * guests * cateringHolidayMultiplier());
+      add('core','Bar Package',bar.label,bar.model === 'per_guest' ? getBarPerGuestPrice(bar) * guests : bar.price);
+      add('core','Entertainment',selectedText('entPreset','Entertainment'),entertainment.price + getDjAdditionalHoursCharge());
 
-      addPrintLine('Planning & Coordination',planning.label,planning.price + gratuity.total);
-
-      const cateringAmount = catering.price * guests * cateringHolidayMultiplier();
-      addPrintLine('Catering',cateringMode,cateringAmount);
-
-      const barAmount = bar.model === 'per_guest'
-        ? getBarPerGuestPrice(bar) * guests
-        : bar.price;
-      addPrintLine('Bar Package',bar.label,barAmount);
-
-      const entertainmentAmount = entertainment.price + getDjAdditionalHoursCharge();
-      addPrintLine('Entertainment',selectedText('entPreset','Entertainment'),entertainmentAmount);
-
+      const coreKeys = new Set(['photo','florals','dessert']);
       items.forEach((it,idx)=>{
         if(['venue','planning','catering','bar','ent'].includes(it.key)) return;
         const included = it.required || isItemIncluded(idx);
@@ -1917,34 +2417,95 @@
 
         if(it.key === 'mountain'){
           const selectedMountain = MOUNTAIN_CEREMONY[getVal('mountainSelect','bluesky')] || MOUNTAIN_CEREMONY.bluesky;
-          addPrintLine(it.Category,selectedMountain.label,selectedMountain.price(guests));
+          add('enhancements',it.Category,selectedMountain.label,selectedMountain.price(guests));
         } else {
-          // Generic tier names such as “Budget,” “Mid Range,” and “High End”
-          // are intentionally omitted from the printable proposal.
-          addPrintLine(it.Category,'',getTierVendorAmount(it.key,guests));
+          add(coreKeys.has(it.key) ? 'core' : 'enhancements',it.Category,'',getTierVendorAmount(it.key,guests));
         }
       });
 
       Object.values(DESIGN_UPGRADES).forEach(cfg=>{
         cfg.options.forEach(opt=>{
           if(document.getElementById(`upgrade-${opt.key}`)?.checked){
-            addPrintLine(cfg.title,opt.label,opt.calc(guests));
+            add('style',cfg.title,opt.label,opt.calc(guests));
           }
         });
       });
 
       Object.entries(ADDONS).forEach(([key,cfg])=>{
         if(document.getElementById(`extra-inc-${key}`)?.checked){
-          addPrintLine(cfg.title,'',cfg.calc(guests));
+          add('addons',cfg.title,'',cfg.calc(guests));
         }
       });
 
-      const lineHtml = lines.map(line=>
-        `<div class="print-line">
-          <span class="print-line-name">${line.label}${line.detail ? `<small>${line.detail}</small>` : ''}</span>
-          <strong>${asMoney(line.amount)}</strong>
-        </div>`
-      ).join('');
+      return {
+        result,
+        guests,
+        venue,
+        dayLabel,
+        sections:Object.values(sections).filter(section=>section.lines.length)
+      };
+    }
+
+    function renderLiveEstimate(){
+      const breakdown = getEstimateBreakdown();
+      const context = `${breakdown.guests} guests • ${breakdown.venue.label} • ${breakdown.dayLabel}`;
+      const contextEl = $('#estimateContext');
+      const mobileContextEl = $('#mobileEstimateContext');
+      if(contextEl) contextEl.textContent = context;
+      if(mobileContextEl) mobileContextEl.textContent = context;
+
+      const desktop = $('#liveEstimateBreakdown');
+      if(desktop){
+        desktop.innerHTML = breakdown.sections.map(section=>`
+          <section class="estimate-breakdown-section">
+            <div class="estimate-breakdown-heading">${section.title}</div>
+            ${section.lines.map(line=>`
+              <div class="estimate-breakdown-line">
+                <span>${line.label}${line.detail ? `<small>${line.detail}</small>` : ''}</span>
+                <strong>${asMoney(line.amount)}</strong>
+              </div>
+            `).join('')}
+          </section>
+        `).join('');
+      }
+
+      const mobile = $('#mobileEstimateBreakdown');
+      if(mobile){
+        const allLines = breakdown.sections.flatMap(section=>section.lines);
+        mobile.innerHTML = allLines.map(line=>`
+          <div class="mobile-breakdown-line">
+            <span>${line.label}</span>
+            <strong>${asMoney(line.amount)}</strong>
+          </div>
+        `).join('');
+      }
+
+      const mobileSubtotal = $('#mobileSubtotalOut');
+      const mobileTaxes = $('#mobileTaxesOut');
+      const mobileGrand = $('#mobileGrandOut');
+      const mobilePanelGrand = $('#mobilePanelGrandOut');
+      if(mobileSubtotal) mobileSubtotal.textContent = asMoney(breakdown.result.subtotal);
+      if(mobileTaxes) mobileTaxes.textContent = asMoney(breakdown.result.taxes);
+      if(mobileGrand) mobileGrand.textContent = asMoney(breakdown.result.grand);
+      if(mobilePanelGrand) mobilePanelGrand.textContent = asMoney(breakdown.result.grand);
+    }
+
+    function buildPrintProposal(){
+      const breakdown = getEstimateBreakdown();
+      const result = breakdown.result;
+
+      const sectionsHtml = breakdown.sections.map(section=>`
+        <div class="print-section">
+          <h2>${section.title}</h2>
+          ${section.lines.map(line=>`
+            <div class="print-line">
+              <span class="print-line-name">${line.label}${line.detail ? `<small>${line.detail}</small>` : ''}</span>
+              <span class="print-dots" aria-hidden="true"></span>
+              <strong>${asMoney(line.amount)}</strong>
+            </div>
+          `).join('')}
+        </div>
+      `).join('');
 
       const proposal = $('#printProposal');
       proposal.innerHTML = `
@@ -1956,22 +2517,19 @@
         <div class="print-summary-grid">
           <div class="print-summary-box">
             <div class="print-summary-label">Guest Count</div>
-            <div class="print-summary-value">${guests}</div>
+            <div class="print-summary-value">${breakdown.guests}</div>
           </div>
           <div class="print-summary-box">
             <div class="print-summary-label">Venue</div>
-            <div class="print-summary-value">${venue.label}</div>
+            <div class="print-summary-value">${breakdown.venue.label}</div>
           </div>
           <div class="print-summary-box">
             <div class="print-summary-label">Date Type</div>
-            <div class="print-summary-value">${dayLabel}</div>
+            <div class="print-summary-value">${breakdown.dayLabel}</div>
           </div>
         </div>
 
-        <div class="print-section">
-          <h2>Estimate Selections</h2>
-          ${lineHtml}
-        </div>
+        ${sectionsHtml}
 
         <div class="print-total">
           <div class="print-total-row"><span>Subtotal</span><strong>${asMoney(result.subtotal)}</strong></div>
@@ -1996,6 +2554,9 @@
       animateTotals(result);
       updateValueLabels();
       updateDescriptions();
+      renderLiveEstimate();
+      scheduleDesktopRailPosition();
+      scheduleMobileEstimateClearance();
     }
 
     function runTests(){
@@ -2014,9 +2575,56 @@
         console.assert(DESIGN_UPGRADES.chairs.options[0].calc(100) === 2000, 'Crossback chairs calculate correctly');
         console.assert(DESIGN_UPGRADES.linens.options[0].calc(100) === 975, 'Floral linens calculate correctly');
         console.assert(DESIGN_UPGRADES.glassware.options[1].calc(100) === 1500, 'Full glassware calculates correctly');
+        console.assert(typeof getEstimateBreakdown === 'function', 'Shared estimate breakdown exists');
+        console.assert(typeof renderLiveEstimate === 'function', 'Live estimate renderer exists');
+        console.assert(document.querySelectorAll('[data-estimate-action]').length === 6, 'Desktop and mobile actions rendered');
+        console.assert(document.getElementById('mobileEstimateShell'), 'Mobile estimate bar rendered');
+        console.assert(document.getElementById('liveEstimateBreakdown'), 'Desktop live proposal rendered');
+        console.assert(typeof positionDesktopEstimateRail === 'function', 'Desktop rail avoids introductory content');
+        console.assert(typeof updateMobileEstimateClearance === 'function', 'Mobile estimate reserves bottom-page clearance');
+        console.assert(BAR_ORDER.length === 5, 'All five bar packages are available');
+        console.assert(document.querySelectorAll('.tier-labels').length > 0, 'Responsive tier labels rendered');
       } catch(e) {
         console.warn('Tests skipped', e);
       }
+    }
+
+    function positionDesktopEstimateRail(){
+      const railCard = document.querySelector('.estimate-rail-card');
+      const layout = document.querySelector('.estimator-layout');
+      if(!railCard || !layout || window.innerWidth < 1000) return;
+
+      const layoutTop = layout.getBoundingClientRect().top;
+      railCard.style.top = `${Math.max(18, layoutTop)}px`;
+    }
+
+    let railPositionFrame = null;
+    function scheduleDesktopRailPosition(){
+      if(railPositionFrame) cancelAnimationFrame(railPositionFrame);
+      railPositionFrame = requestAnimationFrame(()=>{
+        positionDesktopEstimateRail();
+        railPositionFrame = null;
+      });
+    }
+
+    function updateMobileEstimateClearance(){
+      const shell = document.getElementById('mobileEstimateShell');
+      if(!shell || window.innerWidth >= 1000){
+        document.documentElement.style.removeProperty('--mobile-estimate-clearance');
+        return;
+      }
+
+      const shellHeight = Math.ceil(shell.getBoundingClientRect().height);
+      document.documentElement.style.setProperty('--mobile-estimate-clearance', `${shellHeight}px`);
+    }
+
+    let mobileClearanceFrame = null;
+    function scheduleMobileEstimateClearance(){
+      if(mobileClearanceFrame) cancelAnimationFrame(mobileClearanceFrame);
+      mobileClearanceFrame = requestAnimationFrame(()=>{
+        updateMobileEstimateClearance();
+        mobileClearanceFrame = null;
+      });
     }
 
     function start(){
@@ -2042,9 +2650,35 @@
         update();
       });
       $('#hoursPreset')?.addEventListener('change',update);
-      $('#resetEstimate')?.addEventListener('click',resetEstimate);
-      $('#shareEstimate')?.addEventListener('click',shareEstimate);
-      $('#printEstimate')?.addEventListener('click',printEstimate);
+      document.querySelectorAll('[data-estimate-action]').forEach(button=>{
+        button.addEventListener('click',()=>{
+          const action = button.dataset.estimateAction;
+          if(action === 'reset') resetEstimate();
+          if(action === 'share') shareEstimate();
+          if(action === 'print') printEstimate();
+        });
+      });
+
+      window.addEventListener('scroll',scheduleDesktopRailPosition,{passive:true});
+      window.addEventListener('resize',()=>{
+        scheduleDesktopRailPosition();
+        scheduleMobileEstimateClearance();
+      });
+      scheduleDesktopRailPosition();
+
+      const mobileShell = $('#mobileEstimateShell');
+      const mobileToggle = $('#mobileEstimateToggle');
+      mobileToggle?.addEventListener('click',()=>{
+        const expanded = mobileShell?.classList.toggle('expanded') ?? false;
+        mobileToggle.setAttribute('aria-expanded',String(expanded));
+        scheduleMobileEstimateClearance();
+      });
+
+      if(mobileShell && 'ResizeObserver' in window){
+        const mobileEstimateObserver = new ResizeObserver(scheduleMobileEstimateClearance);
+        mobileEstimateObserver.observe(mobileShell);
+      }
+      scheduleMobileEstimateClearance();
 
       update();
       runTests();
