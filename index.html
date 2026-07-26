@@ -223,21 +223,112 @@
       border:1px solid rgba(0,0,0,.05);
       border-radius:10px;
     }
+    .upgrade-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    }
 
-    .upgrade-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
-    .upgrade-card { border:1px solid var(--border); border-radius:16px; background:#fff; padding:15px; box-shadow:0 8px 22px rgba(0,0,0,.035); }
-    .upgrade-card h3 { margin:0 0 6px; font-family:Georgia,"Times New Roman",serif; font-size:1.05rem; font-weight:600; }
-    .included-box { background:var(--accent-soft); border:1px solid rgba(111,133,119,.16); border-radius:12px; padding:10px 11px; margin:10px 0 12px; }
-    .included-label { color:var(--accent-2); font-weight:800; font-size:.86rem; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
-    .upgrade-option { border-top:1px solid var(--border); padding-top:11px; margin-top:11px; }
-    .upgrade-option:first-of-type { border-top:0; padding-top:0; margin-top:0; }
-    .upgrade-option .option-title { font-weight:700; }
-    .upgrade-option .option-note { color:var(--muted); font-size:.88rem; margin-top:3px; }
-    .upgrade-price { font-weight:800; white-space:nowrap; }
-    .upgrade-choice { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-top:8px; }
-    .upgrade-choice label { flex:1; }
-    .upgrade-summary { margin-top:12px; border-radius:12px; background:#faf9f7; padding:10px 11px; color:var(--muted); font-size:.9rem; }
-    @media(max-width:900px) { .upgrade-grid { grid-template-columns:1fr; } }
+    .upgrade-card {
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:var(--card);
+      padding:14px;
+    }
+
+    .upgrade-card h3 {
+      margin:0 0 8px;
+      font-family:inherit;
+      font-size:1rem;
+      line-height:1.25;
+      font-weight:800;
+      color:var(--text);
+      letter-spacing:0;
+    }
+
+    .included-box {
+      background: var(--soft);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px 12px;
+      margin:10px 0 12px;
+      color:var(--text);
+    }
+
+    .included-label {
+      display:inline-block;
+      padding:4px 10px;
+      margin-bottom:8px;
+      border-radius:999px;
+      background:rgba(111,133,119,.12);
+      border:1px solid rgba(111,133,119,.22);
+      color:var(--accent);
+      font-weight:800;
+      font-size:.78rem;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+    }
+
+    .upgrade-option {
+      border-top:1px solid var(--border);
+      padding-top:11px;
+      margin-top:11px;
+    }
+
+    .upgrade-option:first-of-type {
+      border-top:0;
+      padding-top:0;
+      margin-top:0;
+    }
+
+    .upgrade-option .option-title {
+      color:var(--text);
+      font-weight:800;
+      line-height:1.25;
+    }
+
+    .upgrade-option .option-note {
+      color:var(--muted);
+      font-size:.86rem;
+      line-height:1.45;
+      margin-top:3px;
+    }
+
+    .upgrade-price {
+      color:var(--text);
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .upgrade-choice {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:8px;
+    }
+
+    .upgrade-choice label {
+      flex:1;
+    }
+
+    .upgrade-summary {
+      margin-top:10px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:var(--soft);
+      padding:9px 10px;
+      color:var(--muted);
+      font-size:.84rem;
+      line-height:1.35;
+    }
+
+    @media(max-width:900px) {
+      .upgrade-grid {
+        grid-template-columns:1fr;
+      }
+    }
+
 
 
     /* Final mobile refinements */
@@ -875,7 +966,7 @@
       Object.entries(DESIGN_UPGRADES).forEach(([category,cfg])=>{
         const card=document.createElement('div'); card.className='upgrade-card';
         const opts=cfg.options.map(opt=>`<div class="upgrade-option"><div class="upgrade-choice"><label class="toggle"><span class="switch"><input type="checkbox" class="design-upgrade-inc" id="upgrade-${opt.key}"><span class="sliderSwitch"></span></span><span><span class="option-title">${opt.label}</span><span class="option-note" style="display:block">${opt.note}</span></span></label><div class="upgrade-price" id="upgrade-price-${opt.key}">${asMoney(opt.calc(guests))}</div></div><div class="upgrade-summary" id="upgrade-summary-${opt.key}">${opt.priceLabel(guests)} = ${asMoney(opt.calc(guests))}</div></div>`).join('');
-        card.innerHTML=`<h3>${cfg.title}</h3><div class="included-box"><div class="included-label">Included in Venue Cost</div><div id="included-${category}">${cfg.included(planning)}</div></div><div class="sub" style="font-weight:700;margin-bottom:6px;">Commonly rented items</div>${opts}`;
+        card.innerHTML=`<h3>${cfg.title}</h3><div class="included-box"><div class="included-label">Included</div><div id="included-${category}">${cfg.included(planning)}</div></div><div class="sub" style="font-weight:700;margin-bottom:6px;">Commonly rented items</div>${opts}`;
         host.appendChild(card);
       });
       host.querySelectorAll('.design-upgrade-inc').forEach(el=>el.addEventListener('change',update));
