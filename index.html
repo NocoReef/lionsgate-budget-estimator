@@ -646,6 +646,19 @@
 
       .print-line strong {
         white-space:nowrap;
+        text-align:right;
+      }
+
+      .print-line-name {
+        font-weight:700;
+      }
+
+      .print-line-name small {
+        display:block;
+        margin-top:2px;
+        color:#666;
+        font-size:10px;
+        font-weight:400;
       }
 
       .print-total {
@@ -1850,22 +1863,52 @@
       const result = compute();
       const guests = result.guests;
       const lines = [];
+      const day = venuePricingDay();
 
-      const venue = VENUE_PRICES[getVal('venueSelect','dovehouse')] || VENUE_PRICES.dovehouse;
+      function addPrintLine(label,detail,amount){
+        lines.push({
+          label,
+          detail:detail || '',
+          amount:Number(amount || 0)
+        });
+      }
+
+      const venueChoice = getVal('venueSelect','dovehouse');
+      const venue = VENUE_PRICES[venueChoice] || VENUE_PRICES.dovehouse;
       const barn = CHANDELIER_BARN[getVal('barnSelect','none')] || CHANDELIER_BARN.none;
       const dayLabel = selectedText('dayPreset','');
+      const additionalHours = ADDL_HOURS[getVal('hoursPreset','0')] || ADDL_HOURS['0'];
       const planning = PLANNING[getVal('planningPreset','month')] || PLANNING.month;
+      const gratuity = computeGratuity();
       const catering = getCateringSelection();
       const cateringMode = selectedText('cateringPreset','Catering');
       const bar = getBarProfile();
       const entertainment = getEntSelection();
 
-      lines.push(['Venue',`${venue.label} — ${dayLabel}`]);
-      if(barn.label !== 'None') lines.push(['Chandelier Barn',barn.label]);
-      lines.push(['Planning & Coordination',planning.label]);
-      lines.push(['Catering',`${cateringMode} — ${catering.label}`]);
-      lines.push(['Bar Package',bar.label]);
-      lines.push(['Entertainment',`${selectedText('entPreset','Entertainment')} — ${entertainment.label}`]);
+      const venueBase = venue[day] || 0;
+      const guestOverage = venueChoice === 'gatehouse' ? Math.max(0,guests-250)*22 : 0;
+      addPrintLine('Venue',`${venue.label} — ${dayLabel}`,venueBase + guestOverage);
+
+      if(barn.label !== 'None'){
+        addPrintLine('Chandelier Barn',barn.label,barn.price(day));
+      }
+
+      if((additionalHours.price || 0) > 0){
+        addPrintLine('Additional Hours',selectedText('hoursPreset',''),additionalHours.price);
+      }
+
+      addPrintLine('Planning & Coordination',planning.label,planning.price + gratuity.total);
+
+      const cateringAmount = catering.price * guests * cateringHolidayMultiplier();
+      addPrintLine('Catering',cateringMode,cateringAmount);
+
+      const barAmount = bar.model === 'per_guest'
+        ? getBarPerGuestPrice(bar) * guests
+        : bar.price;
+      addPrintLine('Bar Package',bar.label,barAmount);
+
+      const entertainmentAmount = entertainment.price + getDjAdditionalHoursCharge();
+      addPrintLine('Entertainment',selectedText('entPreset','Entertainment'),entertainmentAmount);
 
       items.forEach((it,idx)=>{
         if(['venue','planning','catering','bar','ent'].includes(it.key)) return;
@@ -1873,29 +1916,34 @@
         if(!included) return;
 
         if(it.key === 'mountain'){
-          lines.push([it.Category,selectedText('mountainSelect','Mountain Ceremony')]);
+          const selectedMountain = MOUNTAIN_CEREMONY[getVal('mountainSelect','bluesky')] || MOUNTAIN_CEREMONY.bluesky;
+          addPrintLine(it.Category,selectedMountain.label,selectedMountain.price(guests));
         } else {
-          const selected = getTierVendorSelection(it.key);
-          lines.push([it.Category,selected.label]);
+          // Generic tier names such as “Budget,” “Mid Range,” and “High End”
+          // are intentionally omitted from the printable proposal.
+          addPrintLine(it.Category,'',getTierVendorAmount(it.key,guests));
         }
       });
 
-      Object.entries(DESIGN_UPGRADES).forEach(([,cfg])=>{
+      Object.values(DESIGN_UPGRADES).forEach(cfg=>{
         cfg.options.forEach(opt=>{
           if(document.getElementById(`upgrade-${opt.key}`)?.checked){
-            lines.push([`Style Enhancement — ${cfg.title}`,opt.label]);
+            addPrintLine(cfg.title,opt.label,opt.calc(guests));
           }
         });
       });
 
       Object.entries(ADDONS).forEach(([key,cfg])=>{
         if(document.getElementById(`extra-inc-${key}`)?.checked){
-          lines.push(['Additional Add-On',cfg.title]);
+          addPrintLine(cfg.title,'',cfg.calc(guests));
         }
       });
 
-      const lineHtml = lines.map(([label,value])=>
-        `<div class="print-line"><span>${label}</span><strong>${value}</strong></div>`
+      const lineHtml = lines.map(line=>
+        `<div class="print-line">
+          <span class="print-line-name">${line.label}${line.detail ? `<small>${line.detail}</small>` : ''}</span>
+          <strong>${asMoney(line.amount)}</strong>
+        </div>`
       ).join('');
 
       const proposal = $('#printProposal');
