@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lionsgate Wedding Budget Estimator — Version 1.0.7</title>
+  <title>Lionsgate Wedding Budget Estimator — Version 1.1.1 — Wix Integrated</title>
   <style>
     :root {
       --bg:#f7f6f3;
@@ -1184,6 +1184,26 @@
         transform:translateX(-50%);
       }
     }
+
+    body.wix-integrated .estimate-rail,
+    body.wix-integrated .mobile-estimate-shell {
+      display:none !important;
+    }
+
+    body.wix-integrated {
+      padding-bottom:24px !important;
+    }
+
+    @media(min-width:1000px){
+      body.wix-integrated .estimator-layout {
+        grid-template-columns:minmax(0,1fr);
+        max-width:900px;
+      }
+
+      body.wix-integrated .estimator-main {
+        max-width:none;
+      }
+    }
 </style>
 </head>
 
@@ -1355,7 +1375,7 @@
   </div>
 
   <script>
-    // Lionsgate Wedding Budget Estimator — Version 1.0.7
+    // Lionsgate Wedding Budget Estimator — Version 1.1.1
     const VENUE_PRICES = {
       gatehouse:{ label:'The Gatehouse', weekday:6000, friday:9000, saturday:12000, sunday:7000 },
       dovehouse:{ label:'The Dove House', weekday:5000, friday:8000, saturday:10000, sunday:6000 }
@@ -1437,7 +1457,7 @@
 
     const BAR_ORDER = ['none','beer_wine','basic_full','premium_full','premium_plus'];
     const BAR_PROFILES = {
-      none:{ label:'None', price:500, model:'flat', desc:'For use of soda guns. Requires a Beverage Server from Lionsgate.' },
+      none:{ label:'None', price:500, model:'staffed_none', serverHourlyRate:30, guestsPerServer:100, setupHours:1, breakdownHours:1, desc:'Includes soda guns and glassware. Lionsgate provides one beverage server per 100 guests (rounded up), at $30/hour for all event hours plus 1 hour of setup and 1 hour of breakdown.' },
       beer_wine:{ label:'Beer & Wine', price:29, extraHourlyPP:3, model:'per_guest', desc:'4 hours of open bar service. 4 selections of beer, 3 selections of wine, champagne toast.' },
       basic_full:{ label:'Basic Full Bar', price:30, extraHourlyPP:3.5, model:'per_guest', desc:'4 hours of open bar service. 4 selections of basic spirits, 4 selections of beer, 3 selections of wine, champagne toast.' },
       premium_full:{ label:'Premium Full Bar', price:33, extraHourlyPP:4, model:'per_guest', desc:'4 hours of open bar service. 6 selections of top-tier spirits, 4 selections of beer, 3 selections of wine, champagne toast.' },
@@ -1652,6 +1672,38 @@
     }
 
     function getTotalBarHours(){ return 4 + getBarExtraHours(); }
+
+    // Match the event hours displayed in the Venue Options summary (5 standard
+    // event hours, plus any Additional Hours selected by the couple).
+    function getEventHours(){ return 5 + getBarExtraHours(); }
+
+    // The None bar package still includes non-alcoholic beverage equipment and
+    // appropriately staffed beverage service. One server covers up to 100 guests.
+    function getNoneBarBreakdown(guests=currentGuests()){
+      const profile = BAR_PROFILES.none;
+      const serverCount = Math.max(1,Math.ceil(Number(guests) / profile.guestsPerServer));
+      const eventHours = getEventHours();
+      const serviceHours = eventHours + profile.setupHours + profile.breakdownHours;
+      const serverCost = serverCount * serviceHours * profile.serverHourlyRate;
+      return {
+        baseCost:profile.price,
+        serverCount,
+        eventHours,
+        setupHours:profile.setupHours,
+        breakdownHours:profile.breakdownHours,
+        serviceHours,
+        serverRate:profile.serverHourlyRate,
+        serverCost,
+        total:profile.price + serverCost
+      };
+    }
+
+    function getBarTotal(guests=currentGuests()){
+      const profile = getBarProfile();
+      if(profile.model === 'staffed_none') return getNoneBarBreakdown(guests).total;
+      if(profile.model === 'per_guest') return getBarPerGuestPrice(profile) * guests;
+      return profile.price;
+    }
 
     function getBarPerGuestPrice(profile){
       return profile.model === 'per_guest'
@@ -2030,9 +2082,9 @@
           const p = getBarProfile();
           if(p.model === 'per_guest'){
             const pp = getBarPerGuestPrice(p);
-            out.textContent = `${asMoney(pp)} × ${guests} = ${asMoney(pp*guests)} • ${p.label}`;
+            out.textContent = `${asMoney(pp)} × ${guests} = ${asMoney(getBarTotal(guests))} • ${p.label}`;
           } else {
-            out.textContent = `${asMoney(p.price)} • ${p.label}`;
+            out.textContent = `${asMoney(getBarTotal(guests))} • ${p.label}`;
           }
           return;
         }
@@ -2138,6 +2190,13 @@
             const baseDesc = p.desc.replace('4 hours of open bar service.',`${totalHours} hours of open bar service.`);
 
             d.innerHTML = `${guestNoteHTML(guests)}${baseDesc} Pricing shown is before tax and scales with guest count.${extraHours>0?`<br><br><span style="color:#6f8577">+${asMoney(extraPP)} per person (${extraHours} additional hours × ${asMoney(extraRate)} per person/hour)</span><br><span style="color:#6f8577">Additional bar hours total: ${asMoney(extraPP)} × ${guests} guests = ${asMoney(extraPP*guests)}</span>`:''}`;
+          } else if(p.model === 'staffed_none'){
+            const b = getNoneBarBreakdown(guests);
+            const serverWord = b.serverCount === 1 ? 'server' : 'servers';
+            d.innerHTML = `<strong>Soda guns &amp; glassware:</strong> ${asMoney(b.baseCost)}<br>` +
+              `<strong>Beverage service:</strong> ${b.serverCount} ${serverWord} × ${b.serviceHours} hours × ${asMoney(b.serverRate)}/hour = ${asMoney(b.serverCost)}<br>` +
+              `<span style="color:#6f8577">${b.eventHours} event hours + ${b.setupHours} setup hour + ${b.breakdownHours} breakdown hour. One server per 100 guests, rounded up.</span><br><br>` +
+              `<strong>None bar package total: ${asMoney(b.total)}</strong> before tax.`;
           } else {
             d.textContent = `${p.desc} Pricing shown is before tax.`;
           }
@@ -2197,8 +2256,7 @@
         } else if(it.key === 'catering'){
           amount = getCateringSelection().price * guests * cateringHolidayMultiplier();
         } else if(it.key === 'bar'){
-          const p = getBarProfile();
-          amount = p.model === 'per_guest' ? getBarPerGuestPrice(p) * guests : p.price;
+          amount = getBarTotal(guests);
         } else if(it.key === 'ent'){
           amount = getEntSelection().price + getDjAdditionalHoursCharge();
         } else {
@@ -2433,7 +2491,13 @@
       add('foundation','Planning & Coordination',planning.label,planning.price + gratuity.total);
 
       add('core','Catering',cateringMode,catering.price * guests * cateringHolidayMultiplier());
-      add('core','Bar Package',bar.label,bar.model === 'per_guest' ? getBarPerGuestPrice(bar) * guests : bar.price);
+      if(bar.model === 'staffed_none'){
+        const beverage = getNoneBarBreakdown(guests);
+        add('core','Beverage Setup','None bar package: soda guns & glassware',beverage.baseCost);
+        add('core','Beverage Servers',`${beverage.serverCount} × ${beverage.serviceHours} hours × ${asMoney(beverage.serverRate)}/hour (includes setup and breakdown)`,beverage.serverCost);
+      } else {
+        add('core','Bar Package',bar.label,getBarTotal(guests));
+      }
       add('core','Entertainment',selectedText('entPreset','Entertainment'),entertainment.price + getDjAdditionalHoursCharge());
 
       const coreKeys = new Set(['photo','florals','dessert']);
@@ -2575,6 +2639,48 @@
       window.print();
     }
 
+    function isWixIntegrated(){
+      return new URLSearchParams(window.location.search).get('embed') === 'wix';
+    }
+
+    function getWixEstimateContext(result){
+      const venueSelect = document.getElementById('venueSelect');
+      const daySelect = document.getElementById('dayPreset');
+      return {
+        subtotal:result.subtotal,
+        taxes:result.taxes,
+        grand:result.grand,
+        guests:result.guests,
+        venue:venueSelect?.selectedOptions?.[0]?.text || '',
+        dateType:daySelect?.selectedOptions?.[0]?.text || ''
+      };
+    }
+
+    function postEstimateToWix(result){
+      if(!isWixIntegrated() || window.parent === window) return;
+      window.parent.postMessage({
+        source:'lionsgate-estimator',
+        type:'estimate-update',
+        payload:getWixEstimateContext(result)
+      },'*');
+    }
+
+    function handleWixMessage(event){
+      const message = event.data;
+      if(!message || message.source !== 'lionsgate-wix-summary') return;
+
+      if(message.type === 'request-estimate'){
+        postEstimateToWix(compute());
+        return;
+      }
+
+      if(message.type === 'estimate-action'){
+        if(message.action === 'reset') resetEstimate();
+        if(message.action === 'share') shareEstimate();
+        if(message.action === 'print') printEstimate();
+      }
+    }
+
     function update(){
       const result = compute();
       $('#guestsOut').textContent = result.guests;
@@ -2584,6 +2690,7 @@
       renderLiveEstimate();
       scheduleDesktopRailPosition();
       scheduleMobileEstimateClearance();
+      postEstimateToWix(result);
     }
 
     function estimateBreakdownLineTotal(){
@@ -2597,7 +2704,12 @@
     function runTests(){
       try {
         console.log('✅ Estimator initialized', BASE_ITEMS.length, 'items');
-        console.assert(BAR_PROFILES.none.price === 500, 'Bar none $500');
+        console.assert(BAR_PROFILES.none.price === 500, 'Beverage setup $500');
+        console.assert(getNoneBarBreakdown(100).serverCount === 1, 'One beverage server for 100 guests');
+        console.assert(getNoneBarBreakdown(101).serverCount === 2, 'Two beverage servers for 101 guests');
+        console.assert(getNoneBarBreakdown(201).serverCount === 3, 'Three beverage servers for 201 guests');
+        console.assert(getNoneBarBreakdown(100).serviceHours === getEventHours() + 2, 'Beverage service includes setup and breakdown');
+        console.assert(getNoneBarBreakdown(100).total === 500 + getNoneBarBreakdown(100).serviceHours*30, 'Beverage server cost included');
         console.assert(CATERING_PROFILES.buffet()[0].price === 50, 'Buffet Budget $50');
         console.assert(CATERING_PROFILES.plated()[0].price === 80, 'Plated Budget $80');
         console.assert(ENT_PROFILES.dj[0].price === 1750 && ENT_PROFILES.dj[2].price === 3000, 'DJ pricing');
@@ -2665,6 +2777,11 @@
     }
 
     function start(){
+      if(isWixIntegrated()){
+        document.body.classList.add('wix-integrated');
+        window.addEventListener('message',handleWixMessage);
+      }
+
       items = cloneBase();
       const dayEl = $('#dayPreset');
       if(dayEl) $('#calendarBadge').textContent = dayEl.selectedOptions[0].text;
